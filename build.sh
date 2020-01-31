@@ -1,7 +1,7 @@
 THIS_SCRIPT_LOCATION="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 HOST_SRC_DIR_SHELL=${THIS_SCRIPT_LOCATION}/src
-HOST_OUT_DIR_SHELL=${THIS_SCRIPT_LOCATION}/out
+HOST_OUT_DIR_SHELL=${THIS_SCRIPT_LOCATION}/out/docker/linux
 
 DOCKERFILE_DIRECTORY_SHELL=${THIS_SCRIPT_LOCATION}/src/build/docker/linux
 
@@ -31,7 +31,7 @@ mkdir -p $HOST_OUT_DIR_SHELL
 
 # The leading double slash is to workaround a path conversion issue when using
 # MSYS.
-RUN_COMMAND="python3 //build/src/build/build.py"
+RUN_COMMAND="python3 //build/src/build/build.py --out_folder=/build/out"
 
 # Enable the user to override some default settings via command line parameters.
 while getopts r: option
@@ -44,10 +44,8 @@ esac
 done
 
 # Make sure the Docker container image containing the build environment is
-# up to date.
-${DOCKER_COMMAND} build -t test_build ${DOCKERFILE_DIRECTORY}
-
-# Run the actual build command inside the container.
+# up to date and then run the actual build command inside the container.
+${DOCKER_COMMAND} build -t test_build ${DOCKERFILE_DIRECTORY} && \
 ${DOCKER_COMMAND} run --rm --name test_run -it \
     --mount type=bind,source=${HOST_SRC_DIR},target=/build/src,readonly \
     --mount type=bind,source=${HOST_OUT_DIR},target=/build/out \

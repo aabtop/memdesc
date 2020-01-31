@@ -1,6 +1,6 @@
 FROM ubuntu:18.04
 
-LABEL description="Environment for building the project."
+LABEL description="Environment for building the project in Linux."
 
 RUN apt-get update
 

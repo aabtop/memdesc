@@ -1,7 +1,14 @@
-import subprocess
+import argparse
 import os
+import subprocess
 
-os.chdir('/build/out')
-subprocess.run(['cmake', '/build/src']).check_returncode()
-subprocess.run(['cmake', '--build', '.', '--', '-j', str(os.cpu_count())]).check_returncode()
+parser = argparse.ArgumentParser(description='Run a build.')
+parser.add_argument('-o', '--out_folder', required=True,
+                    help='Location of build output folder.')
+args = parser.parse_args()
 
+src_folder = os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir)
+
+os.chdir(args.out_folder)
+subprocess.run(['cmake', src_folder]).check_returncode()
+subprocess.run(['cmake', '--build', '.']).check_returncode()  # [..., '--', '-j', str(os.cpu_count())]
