@@ -19,6 +19,7 @@ docker build -q -t test_build %DOCKERFILE_DIRECTORY% || exit /b %errorlevel%
 rem Note that without setting --isolation=process, you will encounter errors
 rem when attempting to build from a bind mount:
 rem https://github.com/docker/for-win/issues/829
+@echo off
 docker run^
     --isolation=process^
     --rm --name test_run -i^
