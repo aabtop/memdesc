@@ -5,7 +5,7 @@ HOST_OUT_DIR_SHELL=${THIS_SCRIPT_LOCATION}/out
 
 DOCKERFILE_DIRECTORY_SHELL=${THIS_SCRIPT_LOCATION}/src/build/docker/linux
 
-if [ -x "$(command -v docker.exe)" ]; then
+if [ -x "$(command -v docker.exe)" ] && [ -x "$(command -v wslpath)" ]; then
     # Presumably running from WSL with Docker Desktop for Windows.
     DOCKER_COMMAND=docker.exe
     HOST_SRC_DIR=$(wslpath -aw $HOST_SRC_DIR_SHELL)
@@ -21,10 +21,17 @@ else
     exit 1
 fi
 
+#If we're running on MSYS we need to prepend "winpty" to the docker command.
+if [ "$(expr substr $(uname -s) 1 5)" == "MINGW" ]; then
+    DOCKER_COMMAND="winpty ${DOCKER_COMMAND}"
+fi
+
 # Make sure the host output directory exists.
 mkdir -p $HOST_OUT_DIR_SHELL
 
-RUN_COMMAND="python3 /build/src/build/build.py"
+# The leading double slash is to workaround a path conversion issue when using
+# MSYS.
+RUN_COMMAND="python3 //build/src/build/build.py"
 
 # Enable the user to override some default settings via command line parameters.
 while getopts r: option
