@@ -45,7 +45,7 @@ done
 
 # Make sure the Docker container image containing the build environment is
 # up to date and then run the actual build command inside the container.
-${DOCKER_COMMAND} build -t test_build ${DOCKERFILE_DIRECTORY} && \
+${DOCKER_COMMAND} build -q -t test_build ${DOCKERFILE_DIRECTORY} && \
 ${DOCKER_COMMAND} run --rm --name test_run -it \
     --mount type=bind,source=${HOST_SRC_DIR},target=/build/src,readonly \
     --mount type=bind,source=${HOST_OUT_DIR},target=/build/out \

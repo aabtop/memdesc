@@ -14,9 +14,14 @@ SET RUN_COMMAND="python C:/build/src/build/build.py --out_folder=C:/build/out"
  shift
 if not "%1" == "" goto GETOPTS
 
-docker build -t test_build %DOCKERFILE_DIRECTORY% || exit /b %errorlevel%
+docker build -q -t test_build %DOCKERFILE_DIRECTORY% || exit /b %errorlevel%
 
-docker run --rm --name test_run -it^
+rem Note that without setting --isolation=process, you will encounter errors
+rem when attempting to build from a bind mount:
+rem https://github.com/docker/for-win/issues/829
+docker run^
+    --isolation=process^
+    --rm --name test_run -i^
     --mount type=bind,source=%HOST_SRC_DIR%,target=C:\build\src,readonly^
     --mount type=bind,source=%HOST_OUT_DIR%,target=C:\build\out^
     test_build^
