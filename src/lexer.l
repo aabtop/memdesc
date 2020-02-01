@@ -1,24 +1,25 @@
 %option noyywrap
 %option never-interactive
 %option nounistd
+%option warn noyywrap
+%option reentrant
+/*%option prefix="memdesc_yy"*/
+%option bison-bridge
+%option bison-locations
 
 %{
 #include <stdio.h>
-
-#define YY_DECL int yylex()
-
-#include "parser.h"
-
+#include "parser.tab.h"
 %}
 
 %%
 
-[ \t]	; // ignore all whitespace
+[ \t\r]	; // ignore all whitespace
 [0-9]+\.[0-9]+ 	{
-  yylval.fval = static_cast<float>(atof(yytext)); return T_FLOAT;
+  yylval->fval = static_cast<float>(atof(yytext)); return T_FLOAT;
 }
 [0-9]+ {
-  yylval.ival = atoi(yytext); return T_INT;
+  yylval->ival = atoi(yytext); return T_INT;
 }
 \n		{return T_NEWLINE;}
 "+"		{return T_PLUS;}

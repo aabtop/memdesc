@@ -1,13 +1,19 @@
+%require "3.0"
+
+%define api.pure full
+// %define api.prefix {memdesc_yy}
+%locations
+
+%parse-param { void* my_parser }
+%param { void* scanner }
+
 %{
+#define YY_NO_UNISTD_H
+#include "parser.tab.h"
+#include "lexer.yy.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-
-extern int yylex();
-extern int yyparse();
-extern FILE* yyin;
-
-void yyerror(const char* s);
+extern void yyerror(
+		YYLTYPE *locp, void* my_parser, void* scanner, char const *msg);
 %}
 
 %union {
@@ -29,12 +35,10 @@ void yyerror(const char* s);
 
 %%
 
-calculation:
-	   | calculation line
-;
+calculation: line;
 
-line: T_NEWLINE
-    | mixed_expression T_NEWLINE { printf("\tResult: %f\n", $1);}
+line: 
+      mixed_expression T_NEWLINE { printf("\tResult: %f\n", $1);}
     | expression T_NEWLINE { printf("\tResult: %i\n", $1); }
     | T_QUIT T_NEWLINE { printf("bye!\n"); exit(0); }
 ;
@@ -64,18 +68,3 @@ expression: T_INT				{ $$ = $1; }
 ;
 
 %%
-
-int main() {
-	yyin = stdin;
-
-	do {
-		yyparse();
-	} while(!feof(yyin));
-
-	return 0;
-}
-
-void yyerror(const char* s) {
-	fprintf(stderr, "Parse error: %s\n", s);
-	exit(1);
-}
