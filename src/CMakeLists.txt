@@ -12,6 +12,9 @@ find_package(FLEX REQUIRED)
 
 set(GENERATED_SOURCE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/gen)
 
+add_custom_target(ensure_gen_source_directory_exists
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${GENERATED_SOURCE_DIRECTORY})
+
 if (BISON_FOUND)
   # Using a custom command instead of "bison_target" because bison doesn't like
   # being run in a read only directory.
@@ -20,7 +23,7 @@ if (BISON_FOUND)
   set(PARSER_INPUT ${CMAKE_SOURCE_DIR}/parser.y)
   add_custom_command(
       OUTPUT ${PARSER_CC_OUTPUT} ${PARSER_HEADER_OUTPUT}
-      DEPENDS ${PARSER_INPUT}
+      DEPENDS ${PARSER_INPUT} ensure_gen_source_directory_exists
       COMMAND ${BISON_EXECUTABLE}
       --output=${PARSER_CC_OUTPUT}
       --defines=${PARSER_HEADER_OUTPUT}
@@ -35,7 +38,7 @@ if (FLEX_FOUND)
   set(LEXER_INPUT ${CMAKE_SOURCE_DIR}/lexer.l)
   add_custom_command(
       OUTPUT ${LEXER_CC_OUTPUT} ${LEXER_HEADER_OUTPUT}
-      DEPENDS ${LEXER_INPUT}
+      DEPENDS ${LEXER_INPUT} ensure_gen_source_directory_exists
       COMMAND ${FLEX_EXECUTABLE}
       --header-file=${LEXER_HEADER_OUTPUT}
       --outfile=${LEXER_CC_OUTPUT}
