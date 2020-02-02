@@ -54,9 +54,10 @@ endif ()
 
 add_executable(build_test
   main.cc
-  ${PARSER_CC_OUTPUT}
+  lexer_wrapper.cc
+  parser_wrapper.cc
+  parser_wrapper.h
   ${PARSER_HEADER_OUTPUT}
-  ${LEXER_CC_OUTPUT}
   ${LEXER_HEADER_OUTPUT}
   )
 

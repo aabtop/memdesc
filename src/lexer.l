@@ -7,28 +7,31 @@
 %option bison-bridge
 %option bison-locations
 
-%{
-#include <stdio.h>
-#include "parser.tab.h"
-%}
+ID                [a-zA-Z][a-zA-Z0-9\-\_]*
+NATURAL_NUMBER    [1-9][0-9]*
 
 %%
 
-[ \t\r]	; // ignore all whitespace
-[0-9]+\.[0-9]+ 	{
-  yylval->fval = static_cast<float>(atof(yytext)); return T_FLOAT;
+[ \t\r\n]	; // ignore all whitespace
+
+"//".*\n { return T_SINGLE_LINE_COMMENT; }
+"/*".*"*/" { return T_MULTI_LINE_COMMENT; }
+
+"struct" { return T_STRUCT; }
+"{" { return T_BLOCK_OPEN; }
+"}" { return T_BLOCK_CLOSE; }
+";" { return T_SEMICOLON; }
+"[" { return T_ARRAY_OPEN; }
+"]" { return T_ARRAY_CLOSE; }
+
+{ID} {
+  yylval->token_text = yytext;
+  return T_IDENTIFIER;
 }
-[0-9]+ {
-  yylval->ival = atoi(yytext); return T_INT;
+
+{NATURAL_NUMBER} {
+  yylval->token_text = yytext;
+  return T_NATURAL_NUMBER;
 }
-\n		{return T_NEWLINE;}
-"+"		{return T_PLUS;}
-"-"		{return T_MINUS;}
-"*"		{return T_MULTIPLY;}
-"/"		{return T_DIVIDE;}
-"("		{return T_LEFT;}
-")"		{return T_RIGHT;}
-"exit"		{return T_QUIT;}
-"quit"		{return T_QUIT;}
 
 %%

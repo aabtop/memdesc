@@ -8,63 +8,84 @@
 %param { void* scanner }
 
 %{
-#define YY_NO_UNISTD_H
-#include "parser.tab.h"
-#include "lexer.yy.h"
-
-extern void yyerror(
-		YYLTYPE *locp, void* my_parser, void* scanner, char const *msg);
+#include "ast.h"
 %}
 
 %union {
-	int ival;
-	float fval;
+	const char* token_text;
 }
 
-%token<ival> T_INT
-%token<fval> T_FLOAT
-%token T_PLUS T_MINUS T_MULTIPLY T_DIVIDE T_LEFT T_RIGHT
-%token T_NEWLINE T_QUIT
-%left T_PLUS T_MINUS
-%left T_MULTIPLY T_DIVIDE
+%token<token_text> T_IDENTIFIER
+%token<token_text> T_NATURAL_NUMBER
+%token T_SINGLE_LINE_COMMENT T_MULTI_LINE_COMMENT
+%token T_STRUCT
+%token T_BLOCK_OPEN T_BLOCK_CLOSE
+%token T_ARRAY_OPEN T_ARRAY_CLOSE
+%token T_SEMICOLON
 
-%type<ival> expression
-%type<fval> mixed_expression
+%union { Field* field; }
+%type <field> field_declaration
+%destructor { delete $$; } <field>
 
-%start calculation
+%union { unsigned int array_count; }
+%type <array_count> maybe_array_count
 
+//%type<ival> expression
+//%type<fval> mixed_expression
+
+
+%start memdesc_contents
 %%
 
-calculation: line;
-
-line: 
-      mixed_expression T_NEWLINE { printf("\tResult: %f\n", $1);}
-    | expression T_NEWLINE { printf("\tResult: %i\n", $1); }
-    | T_QUIT T_NEWLINE { printf("bye!\n"); exit(0); }
+memdesc_contents:
+		%empty
+	| memdesc_declaration memdesc_contents
 ;
 
-mixed_expression: T_FLOAT                 		 { $$ = $1; }
-	  | mixed_expression T_PLUS mixed_expression	 { $$ = $1 + $3; }
-	  | mixed_expression T_MINUS mixed_expression	 { $$ = $1 - $3; }
-	  | mixed_expression T_MULTIPLY mixed_expression { $$ = $1 * $3; }
-	  | mixed_expression T_DIVIDE mixed_expression	 { $$ = $1 / $3; }
-	  | T_LEFT mixed_expression T_RIGHT		 { $$ = $2; }
-	  | expression T_PLUS mixed_expression	 	 { $$ = $1 + $3; }
-	  | expression T_MINUS mixed_expression	 	 { $$ = $1 - $3; }
-	  | expression T_MULTIPLY mixed_expression 	 { $$ = $1 * $3; }
-	  | expression T_DIVIDE mixed_expression	 { $$ = $1 / $3; }
-	  | mixed_expression T_PLUS expression	 	 { $$ = $1 + $3; }
-	  | mixed_expression T_MINUS expression	 	 { $$ = $1 - $3; }
-	  | mixed_expression T_MULTIPLY expression 	 { $$ = $1 * $3; }
-	  | mixed_expression T_DIVIDE expression	 { $$ = $1 / $3; }
-	  | expression T_DIVIDE expression		 { $$ = $1 / (float)$3; }
+memdesc_declaration:
+	  comment
+	| struct
 ;
 
-expression: T_INT				{ $$ = $1; }
-	  | expression T_PLUS expression	{ $$ = $1 + $3; }
-	  | expression T_MINUS expression	{ $$ = $1 - $3; }
-	  | expression T_MULTIPLY expression	{ $$ = $1 * $3; }
-	  | T_LEFT expression T_RIGHT		{ $$ = $2; }
+comment:
+		T_SINGLE_LINE_COMMENT
+	| T_MULTI_LINE_COMMENT
 ;
+
+struct:
+    T_STRUCT T_IDENTIFIER T_BLOCK_OPEN struct_body T_BLOCK_CLOSE T_SEMICOLON {
+
+};
+
+struct_body:
+		%empty
+	| field_declaration struct_body
+;
+
+field_declaration: T_IDENTIFIER T_IDENTIFIER maybe_array_count T_SEMICOLON {
+	std::optional<unsigned int> count;
+	if ($3 > 0) {
+		count = $3;
+	}
+
+	$$ = new Field($1, $2, count);
+};
+
+maybe_array_count:
+		%empty { $$ = 0; }
+	| T_ARRAY_OPEN T_NATURAL_NUMBER T_ARRAY_CLOSE {
+			long int as_long_int = strtol($2, NULL, 10);
+			unsigned int as_uint =
+					as_long_int < 0 ||
+					    static_cast<unsigned long int>(as_long_int) >
+									std::numeric_limits<unsigned int>::max() ?
+					0 :
+					static_cast<unsigned int>(as_long_int);
+
+			if (as_long_int == 0) {
+				YYERROR;
+			}
+			$$ = as_uint;
+};
 
 %%

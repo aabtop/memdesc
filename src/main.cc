@@ -2,23 +2,8 @@
 #include <iostream>
 #include <string>
 
-// Must be defined before including lexer.yy.h.
-#define YY_NO_UNISTD_H
-#include "parser.tab.h"
-//#define YYSTYPE MEMDESC_YYSTYPE
-#include "lexer.yy.h"
-
-/*
-void yyerror(const char* s) {
-	fprintf(stderr, "Parse error: %s\n", s);
-	exit(1);
-}
-*/
-
-void yyerror(YYLTYPE *locp, void* my_parser, void* scanner, char const *msg) {
-  std::cerr << "Error: " << locp->first_line << ":" << locp->first_column
-            << " -- " << msg << std::endl;
-}
+#include "parser_wrapper.h"
+#include "lexer_wrapper.h"
 
 int main() {
   std::string line;
