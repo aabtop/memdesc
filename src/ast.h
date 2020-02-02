@@ -12,7 +12,10 @@ struct Field {
       : type(type), name(name), count(count) {
         std::cout << "Field(" << type << ", " << name << ")" << std::endl;
       }
-  
+  ~Field() {
+    std::cout << "Destroying Field()" << std::endl;
+  }
+
   std::string type;
   std::string name;
   std::optional<unsigned int> count;

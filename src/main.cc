@@ -1,4 +1,3 @@
-#include <cassert>
 #include <iostream>
 #include <string>
 
@@ -17,16 +16,7 @@ int main() {
     line += '\0';
     line += '\0';
 
-    yyscan_t scanner;
-    yylex_init(&scanner);
-    YY_BUFFER_STATE scan_buffer = yy_scan_buffer(
-        const_cast<char*>(line.c_str()), line.size(), scanner);
-    
-    // Possibly forgot the last two null bytes expected by flex.
-    assert(scan_buffer != NULL);
-
-    yyparse(0, scanner);
-    yylex_destroy(scanner);
+    ParseFromBuffer(const_cast<char*>(line.c_str()), line.size());
 	}
 
 	return 0;
