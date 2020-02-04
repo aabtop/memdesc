@@ -30,4 +30,6 @@ bool ParseFromBuffer(char* input, size_t size) {
 
   yyparse(0, scanner);
   yylex_destroy(scanner);
+
+  return true;
 }
