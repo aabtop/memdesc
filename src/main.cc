@@ -16,7 +16,10 @@ int main() {
     line += '\0';
     line += '\0';
 
-    ParseFromBuffer(const_cast<char*>(line.c_str()), line.size());
+    if (!ParseFromBuffer(const_cast<char*>(line.c_str()), line.size())) {
+      std::cerr << "Error parsing buffer." << std::endl;
+      return 1;
+    }
 	}
 
 	return 0;
