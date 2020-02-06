@@ -8,6 +8,7 @@
 void yyerror(
 		YYLTYPE *locp, void* my_parser, void* scanner, char const *msg);
 
-bool ParseFromBuffer(char* input, size_t size);
+std::optional<StructDeclarationList> ParseFromBuffer(
+    char* input, size_t size);
 
 #endif  // MEMDESC_PARSER_WRAPPER_H_

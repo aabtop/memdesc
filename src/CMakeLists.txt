@@ -53,8 +53,11 @@ if (FLEX_FOUND)
 endif ()
 
 add_executable(build_test
+  ast.cc
+  ast.h
   main.cc
   lexer_wrapper.cc
+  lexer_wrapper.h
   parser_wrapper.cc
   parser_wrapper.h
   ${PARSER_HEADER_OUTPUT}
