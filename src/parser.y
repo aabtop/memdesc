@@ -1,7 +1,6 @@
 %require "3.0"
 
 %define api.pure full
-// %define api.prefix {memdesc_yy}
 %locations
 
 %parse-param { void* my_parser }
@@ -12,7 +11,10 @@
 %}
 
 %union {
-	const char* token_text;
+	struct {
+		const char* text;
+		int length;
+	} token_text;
 }
 
 %token<token_text> T_IDENTIFIER
@@ -23,16 +25,20 @@
 %token T_ARRAY_OPEN T_ARRAY_CLOSE
 %token T_SEMICOLON
 
-%union { Field* field; }
-%type <field> field_declaration
-%destructor { delete $$; } <field>
+%union { Field* field_declaration; }
+%type <field_declaration> field_declaration
+%destructor { delete $$; } <field_declaration>
+
+%union { Struct* struct_declaration; }
+%type <struct_declaration> struct_declaration
+%destructor { delete $$; } <struct_declaration>
+
+%union { std::vector<Field>* struct_body; }
+%type <struct_body> struct_body
+%destructor { delete $$; } <struct_body>
 
 %union { unsigned int array_count; }
 %type <array_count> maybe_array_count
-
-//%type<ival> expression
-//%type<fval> mixed_expression
-
 
 %start memdesc_contents
 %%
@@ -44,7 +50,7 @@ memdesc_contents:
 
 memdesc_declaration:
 	  comment
-	| struct
+	| struct_declaration
 ;
 
 comment:
@@ -52,29 +58,43 @@ comment:
 	| T_MULTI_LINE_COMMENT
 ;
 
-struct:
+struct_declaration:
     T_STRUCT T_IDENTIFIER T_BLOCK_OPEN struct_body T_BLOCK_CLOSE T_SEMICOLON {
-
+    $$ = new Struct(std::string($2.text, $2.length), std::move(*($4)));
+    delete $4;
 };
 
 struct_body:
-		%empty
-	| field_declaration struct_body
+		%empty {
+			$$ = new std::vector<Field>();
+    }
+	| struct_body field_declaration {
+		  std::vector<Field>* fields($1);
+		  fields->emplace_back(std::move(*($2)));
+		  delete $2;
+		  $$ = fields;
+		}
 ;
 
-field_declaration: T_IDENTIFIER T_IDENTIFIER maybe_array_count T_SEMICOLON {
-	std::optional<unsigned int> count;
-	if ($3 > 0) {
-		count = $3;
-	}
+field_declaration:
+		T_IDENTIFIER T_IDENTIFIER maybe_array_count T_SEMICOLON {
+			std::optional<unsigned int> count;
+			if ($3 > 0) {
+				count = $3;
+			}
 
-	$$ = new Field($1, $2, count);
-};
+			$$ = new Field(std::string($1.text, $1.length),
+						   std::string($2.text, $2.length), count);
+		}
+;
 
 maybe_array_count:
-		%empty { $$ = 0; }
+		%empty {
+			$$ = 0;
+		}
 	| T_ARRAY_OPEN T_NATURAL_NUMBER T_ARRAY_CLOSE {
-			long int as_long_int = strtol($2, NULL, 10);
+			std::string number_as_text($2.text, $2.length);
+			long int as_long_int = strtol(number_as_text.c_str(), NULL, 10);
 			unsigned int as_uint =
 					as_long_int < 0 ||
 					    static_cast<unsigned long int>(as_long_int) >
@@ -86,6 +106,7 @@ maybe_array_count:
 				YYERROR;
 			}
 			$$ = as_uint;
-};
+		}
+;
 
 %%

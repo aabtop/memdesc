@@ -3,7 +3,6 @@
 %option nounistd
 %option warn noyywrap
 %option reentrant
-/*%option prefix="memdesc_yy"*/
 %option bison-bridge
 %option bison-locations
 
@@ -25,12 +24,14 @@ NATURAL_NUMBER    [1-9][0-9]*
 "]" { return T_ARRAY_CLOSE; }
 
 {ID} {
-  yylval->token_text = yytext;
+  yylval->token_text.text = yytext;
+  yylval->token_text.length = yyleng;
   return T_IDENTIFIER;
 }
 
 {NATURAL_NUMBER} {
-  yylval->token_text = yytext;
+  yylval->token_text.text = yytext;
+  yylval->token_text.length = yyleng;
   return T_NATURAL_NUMBER;
 }
 
