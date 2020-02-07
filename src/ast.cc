@@ -1,6 +1,20 @@
 #include "ast.h"
 
+#include <numeric>
 #include <sstream>
+
+template <typename F>
+std::string ToString(const std::shared_ptr<F>& x) {
+  return ToString(*x);
+}
+
+template <typename F>
+std::string JoinWith(const std::vector<F>& v, const std::string& join_string) {
+  return std::accumulate(std::next(v.begin()), v.end(), ToString(v[0]),
+                         [&join_string](std::string a, F b) {
+                           return a + join_string + ToString(b);
+                         });
+}
 
 std::string ToString(const Field& field) {
   std::ostringstream oss;
@@ -13,21 +27,9 @@ std::string ToString(const Field& field) {
 }
 
 std::string ToString(const Struct& s) {
-  std::ostringstream oss;
-  oss << "Struct(" << s.name << ", {";
-  for (const auto& field : s.fields) {
-    oss << ToString(field) << ", ";
-  }
-  oss << "})";
-  return oss.str();
+  return "Struct(" + s.name + ", {" + JoinWith(s.fields, ", ") + "})";
 }
 
 std::string ToString(const StructDeclarationList& list) {
-  std::ostringstream oss;
-  oss << "StructDeclarationList({";
-  for (const auto& s : list) {
-    oss << ToString(*s) << ", ";
-  }
-  oss << "})";
-  return oss.str();
+  return "StructDeclarationList({" + JoinWith(list, ", ") + "})";
 }
