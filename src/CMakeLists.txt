@@ -63,12 +63,12 @@ add_library(memdesc_lib
   ${LEXER_HEADER_OUTPUT}
   )
 
-target_include_directories(memdesc_lib PRIVATE ${GENERATED_SOURCE_DIRECTORY}
-                                       PRIVATE ${CMAKE_SOURCE_DIR})
+include_directories(${GENERATED_SOURCE_DIRECTORY} ${CMAKE_SOURCE_DIR})
 
 add_executable(memdesc
   main.cc
   )
+
 
 target_link_libraries(memdesc memdesc_lib)
 
@@ -89,11 +89,11 @@ add_definitions(-D_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING)
 SET(gtest_force_shared_crt ON CACHE BOOL "Use shared (DLL) run-time lib even when Google Test is built as static lib.")
 
 enable_testing()
-add_subdirectory(../third_party/googletest)
+add_subdirectory(third_party/googletest)
 
 include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
-include_directories(${ebb_INCLUDE_DIR})
-link_directories(${ebb_BINARY_DIR})
+include_directories(${memdesc_INCLUDE_DIR})
+link_directories(${memdesc_BINARY_DIR})
 link_directories(${gtest_BINARY_DIR})
 
 add_executable(memdesc_tests ${UNIT_TEST_SRCS})
