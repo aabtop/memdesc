@@ -1,0 +1,12 @@
+name: Build and Test
+
+on: [push]
+
+jobs:
+  build:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build the program
+        run: build.sh

@@ -31,7 +31,7 @@ mkdir -p $HOST_OUT_DIR_SHELL
 
 # The leading double slash is to workaround a path conversion issue when using
 # MSYS.
-RUN_COMMAND="python3 //build/src/build/build.py --out_folder=/build/out"
+RUN_COMMAND="python3 //build/src/build/build.py --out_folder=//build/out"
 
 # Enable the user to override some default settings via command line parameters.
 while getopts r: option

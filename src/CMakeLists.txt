@@ -64,4 +64,5 @@ add_executable(build_test
   ${LEXER_HEADER_OUTPUT}
   )
 
-target_include_directories(build_test PRIVATE ${GENERATED_SOURCE_DIRECTORY})
+target_include_directories(build_test PRIVATE ${GENERATED_SOURCE_DIRECTORY}
+                                      PRIVATE ${CMAKE_SOURCE_DIR})
