@@ -59,6 +59,30 @@ TEST(AstTest, SingleLineComments) {
   EXPECT_FALSE((*result)[0]->fields[0].count);
 }
 
+TEST(AstTest, MultiLineComments) {
+  auto result = ParseTestInput(
+      "/* Comment in front! */\n"
+      "\n"
+      "/* actual \n"
+      "   multiline \n"
+      "   comment.*/\n"
+      "struct /* sneaky middle comment */ Foo {\n"
+      "  /* Multiline comment in the struct.\n"
+      "     Done now.\n"
+      "  */\n"
+      "  float bar;\n"
+      "};\n");
+
+  ASSERT_TRUE(result);
+
+  ASSERT_EQ(1, result->size());
+  EXPECT_EQ("Foo", (*result)[0]->name);
+  ASSERT_EQ(1, (*result)[0]->fields.size());
+  EXPECT_EQ("float", (*result)[0]->fields[0].type);
+  EXPECT_EQ("bar", (*result)[0]->fields[0].name);
+  EXPECT_FALSE((*result)[0]->fields[0].count);
+}
+
 TEST(AstTest, SingleStructMultiField) {
   auto result = ParseTestInput(
       "struct Foo {"

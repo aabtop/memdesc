@@ -9,12 +9,23 @@
 ID                [a-zA-Z][a-zA-Z0-9\-\_]*
 NATURAL_NUMBER    [1-9][0-9]*
 
+%x IN_COMMENT
+
 %%
 
 [ \t\r\n]	; // ignore all whitespace
 
 "//".*\n // Eat the comment.
-"/*".*"*/" // Eat the comment.
+
+<INITIAL>{ // Handle multiline comments.
+"/*"              BEGIN(IN_COMMENT);
+}
+<IN_COMMENT>{
+"*/"      BEGIN(INITIAL);
+[^*\n]+   // eat comment in chunks
+"*"       // eat the lone star
+\n        yylineno++;
+}
 
 "struct" { return T_STRUCT; }
 "{" { return T_BLOCK_OPEN; }
