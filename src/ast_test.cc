@@ -15,7 +15,7 @@ auto ParseTestInput(const char* str) {
 
 TEST(AstTest, SingleStructNoFields) {
   auto result = ParseTestInput(
-"struct Foo {};");
+      "struct Foo {};");
 
   ASSERT_TRUE(result);
 
@@ -26,9 +26,28 @@ TEST(AstTest, SingleStructNoFields) {
 
 TEST(AstTest, SingleStructSingleField) {
   auto result = ParseTestInput(
-"struct Foo {"
-"  float bar;"
-"};");
+      "struct Foo {"
+      "  float bar;"
+      "};");
+
+  ASSERT_TRUE(result);
+
+  ASSERT_EQ(1, result->size());
+  EXPECT_EQ("Foo", (*result)[0]->name);
+  ASSERT_EQ(1, (*result)[0]->fields.size());
+  EXPECT_EQ("float", (*result)[0]->fields[0].type);
+  EXPECT_EQ("bar", (*result)[0]->fields[0].name);
+  EXPECT_FALSE((*result)[0]->fields[0].count);
+}
+
+TEST(AstTest, SingleLineComments) {
+  auto result = ParseTestInput(
+      "// Comment in front!\n"
+      "\n"
+      "struct Foo {  // Starting a new struct.\n"
+      "  // Just a comment on a line by itself.\n"
+      "  float bar;  // This is a member.\n"
+      "}; //And we're done.\n");
 
   ASSERT_TRUE(result);
 
@@ -42,11 +61,11 @@ TEST(AstTest, SingleStructSingleField) {
 
 TEST(AstTest, SingleStructMultiField) {
   auto result = ParseTestInput(
-"struct Foo {"
-"  float bar;"
-"  int32_t bar2;"
-"  double bar3;"
-"};");
+      "struct Foo {"
+      "  float bar;"
+      "  int32_t bar2;"
+      "  double bar3;"
+      "};");
 
   ASSERT_TRUE(result);
 
@@ -66,11 +85,11 @@ TEST(AstTest, SingleStructMultiField) {
 
 TEST(AstTest, SingleStructMultiFieldWithCount) {
   auto result = ParseTestInput(
-"struct Foo {"
-"  float bar;"
-"  int32_t bar2[4];"
-"  double bar3;"
-"};");
+      "struct Foo {"
+      "  float bar;"
+      "  int32_t bar2[4];"
+      "  double bar3;"
+      "};");
 
   ASSERT_TRUE(result);
 
@@ -89,3 +108,26 @@ TEST(AstTest, SingleStructMultiFieldWithCount) {
   EXPECT_FALSE((*result)[0]->fields[2].count);
 }
 
+TEST(AstTest, MultiStructs) {
+  auto result = ParseTestInput(
+      "struct Foo {"
+      "  float bar;"
+      "};"
+      "struct Bar {"
+      "  Foo bar;"
+      "};");
+
+  ASSERT_TRUE(result);
+
+  ASSERT_EQ(2, result->size());
+  EXPECT_EQ("Foo", (*result)[0]->name);
+  ASSERT_EQ(1, (*result)[0]->fields.size());
+  EXPECT_EQ("float", (*result)[0]->fields[0].type);
+  EXPECT_EQ("bar", (*result)[0]->fields[0].name);
+  EXPECT_FALSE((*result)[0]->fields[0].count);
+  EXPECT_EQ("Bar", (*result)[1]->name);
+  ASSERT_EQ(1, (*result)[1]->fields.size());
+  EXPECT_EQ("Foo", (*result)[1]->fields[0].type);
+  EXPECT_EQ("bar", (*result)[1]->fields[0].name);
+  EXPECT_FALSE((*result)[1]->fields[0].count);
+}

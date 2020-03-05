@@ -70,15 +70,7 @@ memdesc_declaration_list:
 		}
 ;
 
-memdesc_declaration:
-	  comment { $$ = nullptr; }
-	| struct_declaration { $$ = $1; }
-;
-
-comment:
-		T_SINGLE_LINE_COMMENT
-	| T_MULTI_LINE_COMMENT
-;
+memdesc_declaration: struct_declaration { $$ = $1; };
 
 struct_declaration:
     T_STRUCT T_IDENTIFIER T_BLOCK_OPEN struct_body T_BLOCK_CLOSE T_SEMICOLON {

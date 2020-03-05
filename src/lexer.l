@@ -13,8 +13,8 @@ NATURAL_NUMBER    [1-9][0-9]*
 
 [ \t\r\n]	; // ignore all whitespace
 
-"//".*\n { return T_SINGLE_LINE_COMMENT; }
-"/*".*"*/" { return T_MULTI_LINE_COMMENT; }
+"//".*\n // Eat the comment.
+"/*".*"*/" // Eat the comment.
 
 "struct" { return T_STRUCT; }
 "{" { return T_BLOCK_OPEN; }
