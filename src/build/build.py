@@ -14,4 +14,4 @@ subprocess.run(['cmake', src_folder]).check_returncode()
 subprocess.run(['cmake', '--build', '.']).check_returncode()
 
 # And finally run the tests before we call it a day.
-subprocess.run(['ctest']).check_returncode()
+subprocess.run(['ctest', '--output-on-failure']).check_returncode()
