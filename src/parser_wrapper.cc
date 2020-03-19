@@ -45,5 +45,5 @@ std::optional<ParseResults> ParseFromBuffer(char* input, size_t size) {
     return std::nullopt;
   }
 
-  return parse_results;
+  return std::move(parse_results);
 }
