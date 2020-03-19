@@ -27,12 +27,16 @@ NATURAL_NUMBER    [1-9][0-9]*
 \n        yylineno++;
 }
 
+"primitive" { return T_PRIMITIVE; }
 "struct" { return T_STRUCT; }
 "{" { return T_BLOCK_OPEN; }
 "}" { return T_BLOCK_CLOSE; }
 ";" { return T_SEMICOLON; }
+"," { return T_COMMA; }
 "[" { return T_ARRAY_OPEN; }
 "]" { return T_ARRAY_CLOSE; }
+"(" { return T_PARENTHESES_OPEN; }
+")" { return T_PARENTHESES_CLOSE; }
 
 {ID} {
   yylval->token_text.text = yytext;

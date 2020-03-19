@@ -17,8 +17,7 @@ int main() {
     line += '\0';
     line += '\0';
 
-    auto result = ParseFromBuffer(
-        const_cast<char*>(line.c_str()), line.size(), {});
+    auto result = ParseFromBuffer(const_cast<char*>(line.c_str()), line.size());
     if (!result) {
       std::cerr << "Error parsing buffer." << std::endl;
       return 1;

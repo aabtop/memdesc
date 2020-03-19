@@ -6,41 +6,43 @@
 #include "parser_wrapper.h"
 
 namespace {
-auto ParseTestInput(
-    const char* str,
-    std::unordered_map<std::string, std::unique_ptr<Primitive>>&&
-        initial_primitives) {
-  std::string test_string(str);
-  test_string.push_back('\0');
-  test_string.push_back('\0');
+auto ParseTestInput(std::string str) {
+  str.push_back('\0');
+  str.push_back('\0');
 
-  return ParseFromBuffer(
-      test_string.data(), test_string.length(), std::move(initial_primitives));
+  return ParseFromBuffer(str.data(), str.length());
 }
 
 auto ParseTestInputWithDefaultPrimitives(const char* str) {
-  std::unordered_map<std::string, std::unique_ptr<Primitive>> primitives;
-  primitives["float"] =
-      std::unique_ptr<Primitive>(new Primitive({"float", 4, 4}));
-  primitives["int32_t"] =
-      std::unique_ptr<Primitive>(new Primitive({"int32_t", 4, 4}));
-  primitives["double"] =
-      std::unique_ptr<Primitive>(new Primitive({"double", 8, 8}));
+  std::string initial_primitives_defs =
+      "primitive float(4, 4);"
+      "primitive int32_t(4, 4);"
+      "primitive double(8, 8);\n";
 
-  return ParseTestInput(str, std::move(primitives));
+  return ParseTestInput(initial_primitives_defs + std::string(str));
 }
 }  // namespace
 
 TEST(AstTest, SingleStructNoFields) {
-  auto result = ParseTestInput(
-      "struct Foo {};",
-      {});
+  auto result = ParseTestInput("struct Foo {};");
 
   ASSERT_TRUE(result);
 
   ASSERT_EQ(1, result->structs.size());
   ASSERT_TRUE(result->structs.find("Foo") != result->structs.end());
   EXPECT_TRUE(result->structs["Foo"]->fields.empty());
+}
+
+TEST(AstTest, SinglePrimitiveDefTest) {
+  auto result = ParseTestInput("primitive Foo(4, 8);");
+
+  ASSERT_TRUE(result);
+
+  ASSERT_EQ(1, result->primitives.size());
+  ASSERT_TRUE(result->primitives.find("Foo") != result->primitives.end());
+  EXPECT_EQ("Foo", result->primitives["Foo"]->name);
+  EXPECT_EQ(4, result->primitives["Foo"]->size);
+  EXPECT_EQ(8, result->primitives["Foo"]->alignment);
 }
 
 TEST(AstTest, SingleStructSingleField) {

@@ -14,10 +14,7 @@ void yyerror(
             << " -- " << msg << std::endl;
 }
 
-std::optional<ParseResults> ParseFromBuffer(
-    char* input, size_t size,
-    std::unordered_map<std::string, std::unique_ptr<Primitive>>&&
-        initial_primitives) {
+std::optional<ParseResults> ParseFromBuffer(char* input, size_t size) {
   if (size < 2 || input[size-2] != '\0' || input[size-1] != '\0') {
     std::cerr << "Invalid input buffer, the last two characters must be '\\0'."
               << std::endl;
@@ -33,7 +30,6 @@ std::optional<ParseResults> ParseFromBuffer(
   }
 
   ParseResults parse_results;
-  parse_results.primitives = std::move(initial_primitives);
 
   int yyparse_result =
       yyparse(&parse_results, scanner);

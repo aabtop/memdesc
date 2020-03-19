@@ -11,23 +11,24 @@
 
 #include "ast.h"
 #include "parse_results.h"
+#include "parser_helper_functions.h"
 
 %}
 
 %union {
-  struct {
-    const char* text;
-    int length;
-  } token_text;
+  TokenText token_text;
 }
 
 %token<token_text> T_IDENTIFIER
 %token<token_text> T_NATURAL_NUMBER
 %token T_SINGLE_LINE_COMMENT T_MULTI_LINE_COMMENT
+%token T_PRIMITIVE
 %token T_STRUCT
 %token T_BLOCK_OPEN T_BLOCK_CLOSE
 %token T_ARRAY_OPEN T_ARRAY_CLOSE
+%token T_PARENTHESES_OPEN T_PARENTHESES_CLOSE
 %token T_SEMICOLON
+%token T_COMMA
 
 %union { Field* field_declaration; }
 %destructor { delete $$; } <field_declaration>
@@ -36,7 +37,12 @@
 %union { Struct* struct_declaration; }
 %destructor { delete $$; } <struct_declaration>
 %type <struct_declaration> struct_declaration
-%type <struct_declaration> memdesc_declaration
+
+%union { Primitive* primitive_declaration; }
+%destructor { delete $$; } <primitive_declaration>
+%type <primitive_declaration> primitive_declaration
+
+%type <void> memdesc_declaration
 
 %union { std::vector<Field>* struct_body; }
 %destructor { delete $$; } <struct_body>
@@ -60,20 +66,62 @@ memdesc_contents:
 
 memdesc_declaration_list:
     %empty {}
-  | memdesc_declaration_list memdesc_declaration {
-			if ($2 != nullptr) {
-				parse_results->structs[$2->name] = std::unique_ptr<Struct>($2);
+  | memdesc_declaration_list memdesc_declaration {}
+;
+
+memdesc_declaration:
+    struct_declaration {
+			if ($1 != nullptr) {
+				parse_results->structs[$1->name] = std::unique_ptr<Struct>($1);
+			}
+    }
+  | primitive_declaration {
+			if ($1 != nullptr) {
+				parse_results->primitives[$1->name] = std::unique_ptr<Primitive>($1);
 			}
     }
 ;
 
-memdesc_declaration: struct_declaration { $$ = $1; };
+primitive_declaration:
+    T_PRIMITIVE T_IDENTIFIER T_PARENTHESES_OPEN
+      T_NATURAL_NUMBER T_COMMA T_NATURAL_NUMBER
+    T_PARENTHESES_CLOSE T_SEMICOLON {
+      std::string name($2.text, $2.length);
+
+      if (LookupBaseType(*parse_results, name)) {
+        // Type already declared.
+        YYERROR;
+      } else {
+        const int MAX_SIZE = std::numeric_limits<int>::max(); 
+        auto size = ParseIntInRange($4, 1, MAX_SIZE);
+        if (!size) {
+          // An invalid value was specified as the primitive size.
+          YYERROR;
+        }
+
+        auto align = ParseIntInRange($6, 1, MAX_SIZE);
+        if (!align) {
+          // An invalid value was specified as the primitive alignment.
+          YYERROR;
+        }
+
+        $$ = new Primitive{
+            name, static_cast<int>(*size), static_cast<int>(*align)};
+      }      
+    };
 
 struct_declaration:
     T_STRUCT T_IDENTIFIER T_BLOCK_OPEN struct_body T_BLOCK_CLOSE T_SEMICOLON {
-    $$ = new Struct{std::string($2.text, $2.length), std::move(*($4))};
-    delete $4;
-};
+      std::string name($2.text, $2.length);
+
+      if (LookupBaseType(*parse_results, name)) {
+        // Type already declared.
+        YYERROR;
+      } else {
+        $$ = new Struct{name, std::move(*($4))};
+        delete $4;
+      }
+    };
 
 struct_body:
     %empty {
@@ -112,19 +160,14 @@ maybe_array_count:
       $$ = 0;
     }
   | T_ARRAY_OPEN T_NATURAL_NUMBER T_ARRAY_CLOSE {
-      std::string number_as_text($2.text, $2.length);
-      long int as_long_int = strtol(number_as_text.c_str(), NULL, 10);
-      unsigned int as_uint =
-          as_long_int < 0 ||
-              static_cast<unsigned long int>(as_long_int) >
-                  std::numeric_limits<unsigned int>::max() ?
-          0 :
-          static_cast<unsigned int>(as_long_int);
-
-      if (as_long_int == 0) {
+      auto array_size = ParseIntInRange(
+          $2, 1, std::numeric_limits<unsigned int>::max());
+      if (!array_size) {
+        // An invalid value was specified as the array size.
         YYERROR;
+      } else {
+        $$ = static_cast<unsigned int>(*array_size);
       }
-      $$ = as_uint;
     }
 ;
 
