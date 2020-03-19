@@ -1,7 +1,6 @@
 #ifndef MEMDESC_AST_H_
 #define MEMDESC_AST_H_
 
-#include <memory>
 #include <optional>
 #include <string>
 #include <variant>

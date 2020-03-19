@@ -5,6 +5,7 @@
 // a parse is taking place.  For example it will track all currently defined
 // types.  It is returned as the output of a parse.
 
+#include <memory>
 #include <unordered_map>
 
 #include "ast.h"

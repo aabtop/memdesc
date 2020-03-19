@@ -57,3 +57,19 @@ const std::string& BaseTypeName(const BaseType& base_type) {
   return std::visit([](auto& x) -> const std::string& { return x->name; },
                     base_type);
 }
+
+const Primitive* AsPrimitive(const BaseType& base_type) {
+  if (std::holds_alternative<Primitive*>(base_type)) {
+    return std::get<Primitive*>(base_type);
+  } else {
+    return nullptr;
+  }
+}
+
+const Struct* AsStruct(const BaseType& base_type) {
+  if (std::holds_alternative<Struct*>(base_type)) {
+    return std::get<Struct*>(base_type);
+  } else {
+    return nullptr;
+  }
+}
