@@ -53,8 +53,9 @@ if (FLEX_FOUND)
 endif ()
 
 add_library(memdesc_lib
-  ast.cc
   ast.h
+  ast_functions.cc
+  ast_functions.h
   lexer_wrapper.cc
   lexer_wrapper.h
   parse_results.cc
@@ -81,7 +82,10 @@ target_link_libraries(memdesc memdesc_lib)
 ################################################################################
 
 set(UNIT_TEST_SRCS
+  ast_test_helpers.cc
+  ast_test_helpers.h
   ast_test.cc
+  ast_functions_test.cc
 )
 
 # Override gtest's  aults.

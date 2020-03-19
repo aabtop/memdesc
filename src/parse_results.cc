@@ -3,6 +3,7 @@
 #include <optional>
 #include <sstream>
 #include "ast.h"
+#include "ast_functions.h"
 
 std::string ToString(const ParseResults& parse_results) {
   std::ostringstream oss;

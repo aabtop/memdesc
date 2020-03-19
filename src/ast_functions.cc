@@ -1,4 +1,4 @@
-#include "ast.h"
+#include "ast_functions.h"
 
 #include <numeric>
 #include <sstream>
@@ -51,4 +51,9 @@ std::string ToString(const Field& field) {
 
 std::string ToString(const Struct& s) {
   return "Struct(" + s.name + ", {" + JoinWith(s.fields, ", ") + "})";
+}
+
+const std::string& BaseTypeName(const BaseType& base_type) {
+  return std::visit([](auto& x) -> const std::string& { return x->name; },
+                    base_type);
 }

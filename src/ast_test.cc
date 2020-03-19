@@ -3,25 +3,7 @@
 #include <memory>
 
 #include "ast.h"
-#include "parser_wrapper.h"
-
-namespace {
-auto ParseTestInput(std::string str) {
-  str.push_back('\0');
-  str.push_back('\0');
-
-  return ParseFromBuffer(str.data(), str.length());
-}
-
-auto ParseTestInputWithDefaultPrimitives(const char* str) {
-  std::string initial_primitives_defs =
-      "primitive float(4, 4);"
-      "primitive int32_t(4, 4);"
-      "primitive double(8, 8);\n";
-
-  return ParseTestInput(initial_primitives_defs + std::string(str));
-}
-}  // namespace
+#include "ast_test_helpers.h"
 
 TEST(AstTest, SingleStructNoFields) {
   auto result = ParseTestInput("struct Foo {};");
@@ -181,7 +163,7 @@ TEST(AstTest, MultiStructs) {
       "  float bar;"
       "};"
       "struct Bar {"
-      "  Foo bar2;"
+      "  Foo foo;"
       "};");
 
   ASSERT_TRUE(result);
@@ -198,9 +180,9 @@ TEST(AstTest, MultiStructs) {
 
   ASSERT_TRUE(result->structs.find("Bar") != result->structs.end());
   ASSERT_EQ(1, result->structs["Bar"]->fields.size());
-  Struct* bar2_type =
+  Struct* foo_type =
       std::get<Struct*>(result->structs["Bar"]->fields[0].type.base_type);
-  EXPECT_EQ("Foo", bar2_type->name);
-  EXPECT_EQ("bar2", result->structs["Bar"]->fields[0].name);
+  EXPECT_EQ("Foo", foo_type->name);
+  EXPECT_EQ("foo", result->structs["Bar"]->fields[0].name);
   EXPECT_FALSE(result->structs["Bar"]->fields[0].type.array_count);
 }
