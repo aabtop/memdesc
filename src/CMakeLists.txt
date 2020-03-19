@@ -57,6 +57,8 @@ add_library(memdesc_lib
   ast.h
   lexer_wrapper.cc
   lexer_wrapper.h
+  parse_results.cc
+  parse_results.h
   parser_wrapper.cc
   parser_wrapper.h
   ${PARSER_HEADER_OUTPUT}

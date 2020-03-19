@@ -5,6 +5,7 @@
 #include "parser_wrapper.h"
 #include "lexer_wrapper.h"
 
+#include "parse_results.h"
 #include "parser.tab.cc"
 
 void yyerror(
@@ -13,8 +14,10 @@ void yyerror(
             << " -- " << msg << std::endl;
 }
 
-std::optional<StructDeclarationList> ParseFromBuffer(
-    char* input, size_t size) {
+std::optional<ParseResults> ParseFromBuffer(
+    char* input, size_t size,
+    std::unordered_map<std::string, std::unique_ptr<Primitive>>&&
+        initial_primitives) {
   if (size < 2 || input[size-2] != '\0' || input[size-1] != '\0') {
     std::cerr << "Invalid input buffer, the last two characters must be '\\0'."
               << std::endl;
@@ -29,9 +32,11 @@ std::optional<StructDeclarationList> ParseFromBuffer(
     return std::nullopt;
   }
 
-  StructDeclarationList* final_output = nullptr;
+  ParseResults parse_results;
+  parse_results.primitives = std::move(initial_primitives);
 
-  int yyparse_result = yyparse(reinterpret_cast<void**>(&final_output), scanner);
+  int yyparse_result =
+      yyparse(&parse_results, scanner);
   yylex_destroy(scanner);
 
   if (yyparse_result != 0) {
@@ -39,13 +44,10 @@ std::optional<StructDeclarationList> ParseFromBuffer(
     return std::nullopt;
   }
 
-  if (final_output == nullptr) {
+  if (!parse_results.success) {
     std::cerr << "Unexpected null value as final output." << std::endl;
     return std::nullopt;
   }
 
-  StructDeclarationList ret_val(std::move(*final_output));
-  delete final_output;
-
-  return ret_val;
+  return parse_results;
 }
