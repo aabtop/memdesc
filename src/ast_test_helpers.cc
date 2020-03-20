@@ -2,15 +2,14 @@
 
 #include "parser_wrapper.h"
 
-std::optional<ParseResults> ParseTestInput(std::string str) {
+ParseResults ParseTestInput(std::string str) {
   str.push_back('\0');
   str.push_back('\0');
 
   return ParseFromBuffer(str.data(), str.length());
 }
 
-std::optional<ParseResults> ParseTestInputWithDefaultPrimitives(
-    std::string str) {
+ParseResults ParseTestInputWithDefaultPrimitives(std::string str) {
   std::string initial_primitives_defs =
       "primitive float(4, 4);"
       "primitive int32_t(4, 4);"

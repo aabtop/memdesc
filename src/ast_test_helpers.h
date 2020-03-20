@@ -6,9 +6,8 @@
 
 #include "parse_results.h"
 
-std::optional<ParseResults> ParseTestInput(std::string str);
+ParseResults ParseTestInput(std::string str);
 
-std::optional<ParseResults> ParseTestInputWithDefaultPrimitives(
-    std::string str);
+ParseResults ParseTestInputWithDefaultPrimitives(std::string str);
 
 #endif  // MEMDESC_AST_TEST_HELPERS_H_

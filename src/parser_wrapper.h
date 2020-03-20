@@ -7,8 +7,8 @@
 #include "parser.tab.h"
 
 void yyerror(
-		YYLTYPE *locp, void* my_parser, void* scanner, char const *msg);
+		YYLTYPE *locp, ParseResults* parse_results, void* scanner, char const *msg);
 
-std::optional<ParseResults> ParseFromBuffer(char* input, size_t size);
+ParseResults ParseFromBuffer(char* input, size_t size);
 
 #endif  // MEMDESC_PARSER_WRAPPER_H_

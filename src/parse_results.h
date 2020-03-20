@@ -10,11 +10,29 @@
 
 #include "ast.h"
 
+struct SourceLocation {
+  int line_number;
+  int column_number;
+  std::optional<std::string> filename;
+};
+
+std::string ToString(const SourceLocation& location);
+
+struct Error {
+  SourceLocation location;
+  std::string message;
+};
+
+std::string ToString(const Error& error);
+
 struct ParseResults {
   std::unordered_map<std::string, std::unique_ptr<Primitive>> primitives;
   std::unordered_map<std::string, std::unique_ptr<Struct>> structs;
 
-  bool success = false;
+  std::optional<Error> error;
+
+  // Is the parse completed?  True implies not only completion but also success.
+  bool complete = false;
 };
 
 std::string ToString(const ParseResults& parse_results);

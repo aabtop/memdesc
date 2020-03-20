@@ -5,11 +5,27 @@
 %option reentrant
 %option bison-bridge
 %option bison-locations
+%option yylineno
 
 ID                [a-zA-Z][a-zA-Z0-9\-\_]*
 NATURAL_NUMBER    [1-9][0-9]*
 
 %x IN_COMMENT
+
+%{
+#define YY_USER_ACTION \
+    yylloc->first_line = yylloc->last_line; \
+    yylloc->first_column = yylloc->last_column; \
+    for(int i = 0; yytext[i] != '\0'; i++) { \
+        if(yytext[i] == '\n') { \
+            yylloc->last_line++; \
+            yylloc->last_column = 1; \
+        } \
+        else { \
+            yylloc->last_column++; \
+        } \
+    }
+%}
 
 %%
 
@@ -24,7 +40,6 @@ NATURAL_NUMBER    [1-9][0-9]*
 "*/"      BEGIN(INITIAL);
 [^*\n]+   // eat comment in chunks
 "*"       // eat the lone star
-\n        yylineno++;
 }
 
 "primitive" { return T_PRIMITIVE; }

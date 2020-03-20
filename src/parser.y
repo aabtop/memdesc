@@ -60,7 +60,7 @@
 
 memdesc_contents:
 		memdesc_declaration_list {
-			parse_results->success = true;
+			parse_results->complete = true;
 		}
 ;
 
