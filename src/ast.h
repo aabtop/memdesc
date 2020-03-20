@@ -19,7 +19,6 @@ using BaseType =
 
 struct Type {
   BaseType base_type;
-  int pointer_degree;
   std::optional<unsigned int> array_count;
 };
 

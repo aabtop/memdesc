@@ -30,7 +30,7 @@ std::string ToString(const BaseType& base_type) {
 
 std::string ToString(const Type& type) {
   std::ostringstream oss;
-  oss << "Type(" << ToString(type.base_type) << ", " << "PointerDegree(" << type.pointer_degree << ")";
+  oss << "Type(" << ToString(type.base_type);
   if (type.array_count) {
     oss << ", " << *type.array_count;
   }

@@ -149,7 +149,7 @@ field_declaration:
 				// Undefined type referenced.
 				YYERROR;
 			} else {
-	      $$ = new Field{Type{*found, 0, array_count},
+	      $$ = new Field{Type{*found, array_count},
   	             			 std::string($2.text, $2.length)};
 			}
     }
