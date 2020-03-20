@@ -13,6 +13,16 @@
 #include "parse_results.h"
 #include "parser_helper_functions.h"
 
+#define EXIT_WITH_ERROR(x) \
+  parse_results->error = Error({ \
+      { \
+          yylloc.first_line, \
+          yylloc.first_column, \
+      }, \
+      x \
+  }); \
+  YYERROR
+
 %}
 
 %union {
@@ -90,19 +100,19 @@ primitive_declaration:
 
       if (LookupBaseType(*parse_results, name)) {
         // Type already declared.
-        YYERROR;
+        EXIT_WITH_ERROR("Type already declared.");
       } else {
         const int MAX_SIZE = std::numeric_limits<int>::max(); 
         auto size = ParseIntInRange($4, 1, MAX_SIZE);
         if (!size) {
           // An invalid value was specified as the primitive size.
-          YYERROR;
+          EXIT_WITH_ERROR("Invalid size specified.");
         }
 
         auto align = ParseIntInRange($6, 1, MAX_SIZE);
         if (!align) {
           // An invalid value was specified as the primitive alignment.
-          YYERROR;
+          EXIT_WITH_ERROR("Invalid alignment specified.");
         }
 
         $$ = new Primitive{
@@ -116,7 +126,7 @@ struct_declaration:
 
       if (LookupBaseType(*parse_results, name)) {
         // Type already declared.
-        YYERROR;
+        EXIT_WITH_ERROR("Type already declared.");
       } else {
         $$ = new Struct{name, std::move(*($4))};
         delete $4;
@@ -147,7 +157,7 @@ field_declaration:
 
 			if (!found) {
 				// Undefined type referenced.
-				YYERROR;
+				EXIT_WITH_ERROR("Undefined type.");
 			} else {
 	      $$ = new Field{Type{*found, array_count},
   	             			 std::string($2.text, $2.length)};
@@ -164,7 +174,7 @@ maybe_array_count:
           $2, 1, std::numeric_limits<unsigned int>::max());
       if (!array_size) {
         // An invalid value was specified as the array size.
-        YYERROR;
+        EXIT_WITH_ERROR("Invalid array size specified.");
       } else {
         $$ = static_cast<unsigned int>(*array_size);
       }
