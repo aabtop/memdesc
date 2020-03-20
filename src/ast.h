@@ -6,10 +6,18 @@
 #include <variant>
 #include <vector>
 
+struct SourceLocation {
+  int line_number;
+  int column_number;
+  std::optional<std::string> filename;
+};
+
 struct Primitive {
   std::string name;
   int size;
   int alignment;
+
+  SourceLocation defined_at;
 };
 
 struct Struct;
@@ -29,7 +37,9 @@ struct Field {
 
 struct Struct {
   std::string name;
-  std::vector<Field> fields;  
+  std::vector<Field> fields;
+
+  SourceLocation defined_at;
 };
 
 #endif  // MEMDESC_AST_H_

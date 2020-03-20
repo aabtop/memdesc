@@ -16,7 +16,7 @@ void yyerror(
         locp->first_line,
         locp->first_column,
       },
-      msg,
+      SyntaxError{msg},
   });
 }
 

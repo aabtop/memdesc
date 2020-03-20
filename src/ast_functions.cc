@@ -11,6 +11,21 @@ std::string JoinWith(const std::vector<F>& v, const std::string& join_string) {
                          });
 }
 
+std::string ToString(const SourceLocation& location) {
+  std::ostringstream oss;
+  
+  oss << "(";
+
+  if (location.filename) {
+    oss << *location.filename;
+  }
+
+  oss << " : " << location.line_number << " : " << location.column_number
+      << ")";
+  
+  return oss.str();
+}
+
 std::string ToString(const Primitive& primitive) {
   std::ostringstream oss;
   oss << "Primitive(" << primitive.name << ", "
@@ -50,6 +65,13 @@ std::string ToString(const Struct& s) {
 
 const std::string& BaseTypeName(const BaseType& base_type) {
   return std::visit([](auto& x) -> const std::string& { return x->name; },
+                    base_type);
+}
+
+const SourceLocation& DefinedAt(const BaseType& base_type) {
+  return std::visit([](auto& x) -> const SourceLocation& {
+                      return x->defined_at;
+                    },
                     base_type);
 }
 

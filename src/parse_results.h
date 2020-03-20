@@ -9,18 +9,11 @@
 #include <unordered_map>
 
 #include "ast.h"
-
-struct SourceLocation {
-  int line_number;
-  int column_number;
-  std::optional<std::string> filename;
-};
-
-std::string ToString(const SourceLocation& location);
+#include "parse_error.h"
 
 struct Error {
   SourceLocation location;
-  std::string message;
+  ParseError error;
 };
 
 std::string ToString(const Error& error);

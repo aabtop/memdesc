@@ -58,6 +58,8 @@ add_library(memdesc_lib
   ast_functions.h
   lexer_wrapper.cc
   lexer_wrapper.h
+  parse_error.cc
+  parse_error.h
   parse_results.cc
   parse_results.h
   parser_helper_functions.cc

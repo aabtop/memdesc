@@ -5,25 +5,10 @@
 #include "ast.h"
 #include "ast_functions.h"
 
-std::string ToString(const SourceLocation& location) {
-  std::ostringstream oss;
-  
-  oss << "(";
-
-  if (location.filename) {
-    oss << *location.filename;
-  }
-
-  oss << " : " << location.line_number << " : " << location.column_number
-      << ")";
-  
-  return oss.str();
-}
-
 std::string ToString(const Error& error) {
   std::ostringstream oss;
 
-  oss << "Error(" << ToString(error.location) << ", " << error.message << ")";
+  oss << "Error(" << ToString(error.location) << ", " << ToString(error) << ")";
   
   return oss.str();
 }

@@ -10,17 +10,18 @@
 #include <memory>
 
 #include "ast.h"
+#include "parse_error.h"
 #include "parse_results.h"
 #include "parser_helper_functions.h"
 
-#define EXIT_WITH_ERROR(x) \
-  parse_results->error = Error({ \
-      { \
-          yylloc.first_line, \
-          yylloc.first_column, \
-      }, \
-      x \
-  }); \
+#define SOURCE_LOCATION(loc) \
+  { \
+    loc.first_line, \
+    loc.first_column, \
+  }
+
+#define EXIT_WITH_ERROR(loc, x) \
+  parse_results->error = Error({SOURCE_LOCATION(loc), x}); \
   YYERROR
 
 %}
@@ -98,25 +99,26 @@ primitive_declaration:
     T_PARENTHESES_CLOSE T_SEMICOLON {
       std::string name($2.text, $2.length);
 
-      if (LookupBaseType(*parse_results, name)) {
+      if (auto base_type = LookupBaseType(*parse_results, name)) {
         // Type already declared.
-        EXIT_WITH_ERROR("Type already declared.");
+        EXIT_WITH_ERROR(@2, TypeRedefinition{*base_type});
       } else {
         const int MAX_SIZE = std::numeric_limits<int>::max(); 
         auto size = ParseIntInRange($4, 1, MAX_SIZE);
         if (!size) {
           // An invalid value was specified as the primitive size.
-          EXIT_WITH_ERROR("Invalid size specified.");
+          EXIT_WITH_ERROR(@4, GenericError{"Invalid size specified."});
         }
 
         auto align = ParseIntInRange($6, 1, MAX_SIZE);
         if (!align) {
           // An invalid value was specified as the primitive alignment.
-          EXIT_WITH_ERROR("Invalid alignment specified.");
+          EXIT_WITH_ERROR(@6, GenericError{"Invalid alignment specified."});
         }
 
         $$ = new Primitive{
-            name, static_cast<int>(*size), static_cast<int>(*align)};
+            name, static_cast<int>(*size), static_cast<int>(*align),
+            SOURCE_LOCATION(@1)};
       }      
     };
 
@@ -124,11 +126,11 @@ struct_declaration:
     T_STRUCT T_IDENTIFIER T_BLOCK_OPEN struct_body T_BLOCK_CLOSE T_SEMICOLON {
       std::string name($2.text, $2.length);
 
-      if (LookupBaseType(*parse_results, name)) {
+      if (auto base_type = LookupBaseType(*parse_results, name)) {
         // Type already declared.
-        EXIT_WITH_ERROR("Type already declared.");
+        EXIT_WITH_ERROR(@2, TypeRedefinition{*base_type});
       } else {
-        $$ = new Struct{name, std::move(*($4))};
+        $$ = new Struct{name, std::move(*($4)), SOURCE_LOCATION(@1)};
         delete $4;
       }
     };
@@ -157,7 +159,7 @@ field_declaration:
 
 			if (!found) {
 				// Undefined type referenced.
-				EXIT_WITH_ERROR("Undefined type.");
+				EXIT_WITH_ERROR(@1, UndeclaredTypeReference{type_name});
 			} else {
 	      $$ = new Field{Type{*found, array_count},
   	             			 std::string($2.text, $2.length)};
@@ -174,7 +176,7 @@ maybe_array_count:
           $2, 1, std::numeric_limits<unsigned int>::max());
       if (!array_size) {
         // An invalid value was specified as the array size.
-        EXIT_WITH_ERROR("Invalid array size specified.");
+        EXIT_WITH_ERROR(@2, GenericError{"Invalid array size specified."});
       } else {
         $$ = static_cast<unsigned int>(*array_size);
       }

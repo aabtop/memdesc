@@ -5,6 +5,7 @@
 
 #include "ast.h"
 
+std::string ToString(const SourceLocation& location);
 std::string ToString(const Primitive& primitive);
 std::string ToString(const BaseType& base_type);
 std::string ToString(const Type& type);
@@ -18,6 +19,8 @@ const std::string& BaseTypeName(const BaseType& base_type);
 inline const std::string& TypeName(const Type& type) {
   return BaseTypeName(type.base_type);
 }
+
+const SourceLocation& DefinedAt(const BaseType& base_type);
 
 // Helper function to quickly get access to the underlying type of a BaseType.
 const Primitive* AsPrimitive(const BaseType& base_type);

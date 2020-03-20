@@ -3,7 +3,9 @@
 #include <memory>
 
 #include "ast.h"
+#include "ast_functions.h"
 #include "ast_test_helpers.h"
+#include "parse_error.h"
 
 TEST(AstTest, SingleStructNoFields) {
   auto result = ParseTestInput("struct Foo {};");
@@ -27,6 +29,31 @@ TEST(AstTest, SinglePrimitiveDefTest) {
   EXPECT_EQ("Foo", result.primitives["Foo"]->name);
   EXPECT_EQ(4, result.primitives["Foo"]->size);
   EXPECT_EQ(8, result.primitives["Foo"]->alignment);
+}
+
+TEST(AstTest, MultiplePrimitiveDefTest) {
+  auto result = ParseTestInput(
+      "primitive Foo(4, 8);\n"
+      "primitive Bar(1, 1);\n");
+
+  ASSERT_FALSE(result.error);
+  ASSERT_TRUE(result.complete);
+
+  ASSERT_EQ(2, result.primitives.size());
+
+  ASSERT_TRUE(result.primitives.find("Foo") != result.primitives.end());
+  EXPECT_EQ("Foo", result.primitives["Foo"]->name);
+  EXPECT_EQ(4, result.primitives["Foo"]->size);
+  EXPECT_EQ(8, result.primitives["Foo"]->alignment);
+  EXPECT_EQ(1, result.primitives["Foo"]->defined_at.line_number);
+  EXPECT_EQ(1, result.primitives["Foo"]->defined_at.column_number);
+
+  ASSERT_TRUE(result.primitives.find("Bar") != result.primitives.end());
+  EXPECT_EQ("Bar", result.primitives["Bar"]->name);
+  EXPECT_EQ(1, result.primitives["Bar"]->size);
+  EXPECT_EQ(1, result.primitives["Bar"]->alignment);
+  EXPECT_EQ(2, result.primitives["Bar"]->defined_at.line_number);
+  EXPECT_EQ(1, result.primitives["Bar"]->defined_at.column_number);
 }
 
 TEST(AstTest, SingleStructSingleField) {
@@ -166,12 +193,12 @@ TEST(AstTest, SingleStructMultiFieldWithCount) {
 
 TEST(AstTest, MultiStructs) {
   auto result = ParseTestInputWithDefaultPrimitives(
-      "struct Foo {"
-      "  float bar;"
-      "};"
-      "struct Bar {"
-      "  Foo foo;"
-      "};");
+      "struct Foo {\n"
+      "  float bar;\n"
+      "};\n"
+      "struct Bar {\n"
+      "  Foo foo;\n"
+      "};\n");
 
   ASSERT_FALSE(result.error);
   ASSERT_TRUE(result.complete);
@@ -195,6 +222,25 @@ TEST(AstTest, MultiStructs) {
   EXPECT_FALSE(result.structs["Bar"]->fields[0].type.array_count);
 }
 
+TEST(AstTest, StructDefinitionLocations) {
+  auto result = ParseTestInput(
+      "struct Foo {};\n"
+      "struct Bar {\n"
+      "  Foo foo;\n"
+      "};\n");
+
+  ASSERT_FALSE(result.error);
+  ASSERT_TRUE(result.complete);
+
+  ASSERT_EQ(2, result.structs.size());
+  ASSERT_TRUE(result.structs.find("Foo") != result.structs.end());
+  ASSERT_TRUE(result.structs.find("Bar") != result.structs.end());
+  EXPECT_EQ(1, result.structs["Foo"]->defined_at.line_number);
+  EXPECT_EQ(1, result.structs["Foo"]->defined_at.column_number);
+  EXPECT_EQ(2, result.structs["Bar"]->defined_at.line_number);
+  EXPECT_EQ(1, result.structs["Bar"]->defined_at.column_number);
+}
+
 TEST(AstTest, ErrorLocationTest) {
   auto result = ParseTestInput(
       "struct Foo {\n"
@@ -205,6 +251,7 @@ TEST(AstTest, ErrorLocationTest) {
 
   EXPECT_EQ(2, result.error->location.line_number);
   EXPECT_EQ(8, result.error->location.column_number);
+  EXPECT_TRUE(std::holds_alternative<SyntaxError>(result.error->error));
 }
 
 TEST(AstTest, ErrorLocationWithMultilineCommentsTest) {
@@ -220,4 +267,57 @@ TEST(AstTest, ErrorLocationWithMultilineCommentsTest) {
 
   EXPECT_EQ(5, result.error->location.line_number);
   EXPECT_EQ(8, result.error->location.column_number);
+  EXPECT_TRUE(std::holds_alternative<SyntaxError>(result.error->error));
+}
+
+TEST(AstTest, UndeclaredTypeTest) {
+  auto result = ParseTestInput(
+      "struct Foo {\n"
+      "  Bar bar;\n"
+      "};\n");
+
+  ASSERT_TRUE(result.error);
+
+  EXPECT_EQ(2, result.error->location.line_number);
+  EXPECT_EQ(3, result.error->location.column_number);
+  UndeclaredTypeReference* undeclared_type_reference =
+      std::get_if<UndeclaredTypeReference>(&(result.error->error));
+  ASSERT_TRUE(undeclared_type_reference);
+  EXPECT_EQ("Bar", undeclared_type_reference->type_name);
+}
+
+TEST(AstTest, StructTypeRedefinitionTest) {
+  auto result = ParseTestInput(
+      "struct Foo {};\n"
+      "struct Bar {};\n"
+      "struct Foo {};\n");
+
+  ASSERT_TRUE(result.error);
+
+  EXPECT_EQ(3, result.error->location.line_number);
+  EXPECT_EQ(8, result.error->location.column_number);
+  TypeRedefinition* type_redefinition =
+      std::get_if<TypeRedefinition>(&(result.error->error));
+  ASSERT_TRUE(type_redefinition);
+  EXPECT_EQ(1, DefinedAt(type_redefinition->original_definition).line_number);
+  EXPECT_EQ(1, DefinedAt(type_redefinition->original_definition).column_number);
+  EXPECT_EQ("Foo", BaseTypeName(type_redefinition->original_definition));
+}
+
+TEST(AstTest, PrimitiveTypeRedefinitionTest) {
+  auto result = ParseTestInput(
+      "primitive Foo(1, 1);\n"
+      "primitive Bar(1, 1);\n"
+      "primitive Foo(4, 4);\n");
+
+  ASSERT_TRUE(result.error);
+
+  EXPECT_EQ(3, result.error->location.line_number);
+  EXPECT_EQ(11, result.error->location.column_number);
+  TypeRedefinition* type_redefinition =
+      std::get_if<TypeRedefinition>(&(result.error->error));
+  ASSERT_TRUE(type_redefinition);
+  EXPECT_EQ(1, DefinedAt(type_redefinition->original_definition).line_number);
+  EXPECT_EQ(1, DefinedAt(type_redefinition->original_definition).column_number);
+  EXPECT_EQ("Foo", BaseTypeName(type_redefinition->original_definition));
 }
