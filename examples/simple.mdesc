@@ -1,0 +1,16 @@
+primitive float(4, 4);
+primitive int(4, 4);
+primitive double(8, 8);
+primitive char(1, 1);
+
+struct Foo {
+  float a;
+  char b;
+  int c;
+};
+
+struct Bar {
+  char a;
+  Foo b;
+  float a;
+};
