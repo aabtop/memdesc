@@ -10,7 +10,14 @@ struct ParseContext {
   const std::optional<std::string> filename;
 
   ParseResults results;
+
+  std::optional<ParseErrorWithLocation> error;
+
+  // Is the parse completed?  True implies not only completion but also success.
+  bool complete = false;
 };
+
+using ParseResultsOrError = std::variant<ParseResults, ParseErrorWithLocation>;
 
 struct TokenText {
   const char* text;

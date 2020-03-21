@@ -6,40 +6,18 @@
 #include "lexer_wrapper.h"
 
 int main(int argc, const char** args) {
-  if (argc >= 2) {
-    // Parse out of a file if a filename is passed.
-    auto result = ParseFromFile(args[1]);
+  // Parse out of a file if a filename is passed.
+  auto results_or_error = ParseFromFile(args[1]);
 
-    if (result.error) {
-      std::cerr << ToString(*result.error) << std::endl;
-      return 1;
-    }  
+  if (const auto error =
+          std::get_if<ParseErrorWithLocation>(&results_or_error)) {
+    std::cerr << ToString(*error) << std::endl;
+    return 1;
+  }  
 
-    std::cout << "Successful parse.  Result: " << std::endl;
-    std::cout << ToString(result) << std::endl << std::endl;
-    return 0;
-  } else {
-    std::string line;
-    while(true) {
-      std::getline(std::cin, line);
-      if (line.empty()) {
-        break;
-      }
+  const auto& results = std::get<ParseResults>(results_or_error);
 
-      line += '\n';
-      line += '\0';
-      line += '\0';
-
-      auto result = ParseFromBuffer(const_cast<char*>(line.c_str()), line.size());
-      if (result.error) {
-        std::cerr << ToString (*result.error) << std::endl;
-        return 1;
-      }
-
-      std::cout << "Successful parse.  Result: " << std::endl;
-      std::cout << ToString(result) << std::endl << std::endl;
-    }
-
-    return 0;
-  }
+  std::cout << "Successful parse.  Result: " << std::endl;
+  std::cout << ToString(results) << std::endl << std::endl;
+  return 0;
 }

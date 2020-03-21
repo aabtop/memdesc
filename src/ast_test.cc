@@ -8,10 +8,10 @@
 #include "parse_error.h"
 
 TEST(AstTest, SingleStructNoFields) {
-  auto result = ParseTestInput("struct Foo {};");
+  auto result_or_error = ParseTestInput("struct Foo {};");
 
-  ASSERT_FALSE(result.error);
-  ASSERT_TRUE(result.complete);
+  ASSERT_FALSE(std::holds_alternative<ParseErrorWithLocation>(result_or_error));
+  auto& result = std::get<ParseResults>(result_or_error);
 
   ASSERT_EQ(1, result.structs.size());
   ASSERT_TRUE(result.structs.find("Foo") != result.structs.end());
@@ -19,10 +19,10 @@ TEST(AstTest, SingleStructNoFields) {
 }
 
 TEST(AstTest, SinglePrimitiveDefTest) {
-  auto result = ParseTestInput("primitive Foo(4, 8);");
+  auto result_or_error = ParseTestInput("primitive Foo(4, 8);");
 
-  ASSERT_FALSE(result.error);
-  ASSERT_TRUE(result.complete);
+  ASSERT_FALSE(std::holds_alternative<ParseErrorWithLocation>(result_or_error));
+  auto& result = std::get<ParseResults>(result_or_error);
 
   ASSERT_EQ(1, result.primitives.size());
   ASSERT_TRUE(result.primitives.find("Foo") != result.primitives.end());
@@ -32,12 +32,12 @@ TEST(AstTest, SinglePrimitiveDefTest) {
 }
 
 TEST(AstTest, MultiplePrimitiveDefTest) {
-  auto result = ParseTestInput(
+  auto result_or_error = ParseTestInput(
       "primitive Foo(4, 8);\n"
       "primitive Bar(1, 1);\n");
 
-  ASSERT_FALSE(result.error);
-  ASSERT_TRUE(result.complete);
+  ASSERT_FALSE(std::holds_alternative<ParseErrorWithLocation>(result_or_error));
+  auto& result = std::get<ParseResults>(result_or_error);
 
   ASSERT_EQ(2, result.primitives.size());
 
@@ -57,13 +57,13 @@ TEST(AstTest, MultiplePrimitiveDefTest) {
 }
 
 TEST(AstTest, SingleStructSingleField) {
-  auto result = ParseTestInputWithDefaultPrimitives(
+  auto result_or_error = ParseTestInputWithDefaultPrimitives(
       "struct Foo {"
       "  float bar;"
       "};");
 
-  ASSERT_FALSE(result.error);
-  ASSERT_TRUE(result.complete);
+  ASSERT_FALSE(std::holds_alternative<ParseErrorWithLocation>(result_or_error));
+  auto& result = std::get<ParseResults>(result_or_error);
 
   ASSERT_EQ(1, result.structs.size());
   ASSERT_TRUE(result.structs.find("Foo") != result.structs.end());
@@ -76,7 +76,7 @@ TEST(AstTest, SingleStructSingleField) {
 }
 
 TEST(AstTest, SingleLineComments) {
-  auto result = ParseTestInputWithDefaultPrimitives(
+  auto result_or_error = ParseTestInputWithDefaultPrimitives(
       "// Comment in front!\n"
       "\n"
       "struct Foo {  // Starting a new struct.\n"
@@ -84,8 +84,8 @@ TEST(AstTest, SingleLineComments) {
       "  float bar;  // This is a member.\n"
       "}; //And we're done.\n");
 
-  ASSERT_FALSE(result.error);
-  ASSERT_TRUE(result.complete);
+  ASSERT_FALSE(std::holds_alternative<ParseErrorWithLocation>(result_or_error));
+  auto& result = std::get<ParseResults>(result_or_error);
 
   ASSERT_EQ(1, result.structs.size());
   ASSERT_TRUE(result.structs.find("Foo") != result.structs.end());
@@ -98,7 +98,7 @@ TEST(AstTest, SingleLineComments) {
 }
 
 TEST(AstTest, MultiLineComments) {
-  auto result = ParseTestInputWithDefaultPrimitives(
+  auto result_or_error = ParseTestInputWithDefaultPrimitives(
       "/* Comment in front! */\n"
       "\n"
       "/* actual \n"
@@ -111,8 +111,8 @@ TEST(AstTest, MultiLineComments) {
       "  float bar;\n"
       "};\n");
 
-  ASSERT_FALSE(result.error);
-  ASSERT_TRUE(result.complete);
+  ASSERT_FALSE(std::holds_alternative<ParseErrorWithLocation>(result_or_error));
+  auto& result = std::get<ParseResults>(result_or_error);
 
   ASSERT_EQ(1, result.structs.size());
   ASSERT_TRUE(result.structs.find("Foo") != result.structs.end());
@@ -125,15 +125,15 @@ TEST(AstTest, MultiLineComments) {
 }
 
 TEST(AstTest, SingleStructMultiField) {
-  auto result = ParseTestInputWithDefaultPrimitives(
+  auto result_or_error = ParseTestInputWithDefaultPrimitives(
       "struct Foo {"
       "  float bar;"
       "  int32_t bar2;"
       "  double bar3;"
       "};");
 
-  ASSERT_FALSE(result.error);
-  ASSERT_TRUE(result.complete);
+  ASSERT_FALSE(std::holds_alternative<ParseErrorWithLocation>(result_or_error));
+  auto& result = std::get<ParseResults>(result_or_error);
 
   ASSERT_EQ(1, result.structs.size());
   ASSERT_TRUE(result.structs.find("Foo") != result.structs.end());
@@ -158,15 +158,15 @@ TEST(AstTest, SingleStructMultiField) {
 }
 
 TEST(AstTest, SingleStructMultiFieldWithCount) {
-  auto result = ParseTestInputWithDefaultPrimitives(
+  auto result_or_error = ParseTestInputWithDefaultPrimitives(
       "struct Foo {"
       "  float bar;"
       "  int32_t bar2[4];"
       "  double bar3;"
       "};");
 
-  ASSERT_FALSE(result.error);
-  ASSERT_TRUE(result.complete);
+  ASSERT_FALSE(std::holds_alternative<ParseErrorWithLocation>(result_or_error));
+  auto& result = std::get<ParseResults>(result_or_error);
 
   ASSERT_EQ(1, result.structs.size());
   ASSERT_TRUE(result.structs.find("Foo") != result.structs.end());
@@ -192,7 +192,7 @@ TEST(AstTest, SingleStructMultiFieldWithCount) {
 }
 
 TEST(AstTest, MultiStructs) {
-  auto result = ParseTestInputWithDefaultPrimitives(
+  auto result_or_error = ParseTestInputWithDefaultPrimitives(
       "struct Foo {\n"
       "  float bar;\n"
       "};\n"
@@ -200,8 +200,8 @@ TEST(AstTest, MultiStructs) {
       "  Foo foo;\n"
       "};\n");
 
-  ASSERT_FALSE(result.error);
-  ASSERT_TRUE(result.complete);
+  ASSERT_FALSE(std::holds_alternative<ParseErrorWithLocation>(result_or_error));
+  auto& result = std::get<ParseResults>(result_or_error);
 
   ASSERT_EQ(2, result.structs.size());
 
@@ -223,14 +223,14 @@ TEST(AstTest, MultiStructs) {
 }
 
 TEST(AstTest, StructDefinitionLocations) {
-  auto result = ParseTestInput(
+  auto result_or_error = ParseTestInput(
       "struct Foo {};\n"
       "struct Bar {\n"
       "  Foo foo;\n"
       "};\n");
 
-  ASSERT_FALSE(result.error);
-  ASSERT_TRUE(result.complete);
+  ASSERT_FALSE(std::holds_alternative<ParseErrorWithLocation>(result_or_error));
+  auto& result = std::get<ParseResults>(result_or_error);
 
   ASSERT_EQ(2, result.structs.size());
   ASSERT_TRUE(result.structs.find("Foo") != result.structs.end());
@@ -242,20 +242,21 @@ TEST(AstTest, StructDefinitionLocations) {
 }
 
 TEST(AstTest, ErrorLocationTest) {
-  auto result = ParseTestInput(
+  auto result_or_error = ParseTestInput(
       "struct Foo {\n"
       "  float;\n"
       "};\n");
 
-  ASSERT_TRUE(result.error);
+  ASSERT_TRUE(std::holds_alternative<ParseErrorWithLocation>(result_or_error));
+  auto& error = std::get<ParseErrorWithLocation>(result_or_error);
 
-  EXPECT_EQ(2, result.error->location.line_number);
-  EXPECT_EQ(8, result.error->location.column_number);
-  EXPECT_TRUE(std::holds_alternative<SyntaxError>(result.error->error));
+  EXPECT_EQ(2, error.location.line_number);
+  EXPECT_EQ(8, error.location.column_number);
+  EXPECT_TRUE(std::holds_alternative<SyntaxError>(error.error));
 }
 
 TEST(AstTest, ErrorLocationWithMultilineCommentsTest) {
-  auto result = ParseTestInput(
+  auto result_or_error = ParseTestInput(
       "struct Foo {\n"
       "/* just a multiline\n"
       "   comment\n"
@@ -263,61 +264,65 @@ TEST(AstTest, ErrorLocationWithMultilineCommentsTest) {
       "  float;\n"
       "};\n");
 
-  ASSERT_TRUE(result.error);
+  ASSERT_TRUE(std::holds_alternative<ParseErrorWithLocation>(result_or_error));
+  auto& error = std::get<ParseErrorWithLocation>(result_or_error);
 
-  EXPECT_EQ(5, result.error->location.line_number);
-  EXPECT_EQ(8, result.error->location.column_number);
-  EXPECT_TRUE(std::holds_alternative<SyntaxError>(result.error->error));
+  EXPECT_EQ(5, error.location.line_number);
+  EXPECT_EQ(8, error.location.column_number);
+  EXPECT_TRUE(std::holds_alternative<SyntaxError>(error.error));
 }
 
 TEST(AstTest, UndeclaredTypeTest) {
-  auto result = ParseTestInput(
+  auto result_or_error = ParseTestInput(
       "struct Foo {\n"
       "  Bar bar;\n"
       "};\n");
 
-  ASSERT_TRUE(result.error);
+  ASSERT_TRUE(std::holds_alternative<ParseErrorWithLocation>(result_or_error));
+  auto& error = std::get<ParseErrorWithLocation>(result_or_error);
 
-  EXPECT_EQ(2, result.error->location.line_number);
-  EXPECT_EQ(3, result.error->location.column_number);
+  EXPECT_EQ(2, error.location.line_number);
+  EXPECT_EQ(3, error.location.column_number);
   UndeclaredTypeReference* undeclared_type_reference =
-      std::get_if<UndeclaredTypeReference>(&(result.error->error));
+      std::get_if<UndeclaredTypeReference>(&(error.error));
   ASSERT_TRUE(undeclared_type_reference);
   EXPECT_EQ("Bar", undeclared_type_reference->type_name);
 }
 
 TEST(AstTest, StructTypeRedefinitionTest) {
-  auto result = ParseTestInput(
+  auto result_or_error = ParseTestInput(
+      "\n"
       "struct Foo {};\n"
       "struct Bar {};\n"
       "struct Foo {};\n");
 
-  ASSERT_TRUE(result.error);
+  ASSERT_TRUE(std::holds_alternative<ParseErrorWithLocation>(result_or_error));
+  auto& error = std::get<ParseErrorWithLocation>(result_or_error);
 
-  EXPECT_EQ(3, result.error->location.line_number);
-  EXPECT_EQ(8, result.error->location.column_number);
+  EXPECT_EQ(4, error.location.line_number);
+  EXPECT_EQ(8, error.location.column_number);
   TypeRedefinition* type_redefinition =
-      std::get_if<TypeRedefinition>(&(result.error->error));
+      std::get_if<TypeRedefinition>(&(error.error));
   ASSERT_TRUE(type_redefinition);
-  EXPECT_EQ(1, DefinedAt(type_redefinition->original_definition).line_number);
-  EXPECT_EQ(1, DefinedAt(type_redefinition->original_definition).column_number);
-  EXPECT_EQ("Foo", BaseTypeName(type_redefinition->original_definition));
+  EXPECT_EQ(2, type_redefinition->original_definition_location.line_number);
+  EXPECT_EQ(1, type_redefinition->original_definition_location.column_number);
 }
 
 TEST(AstTest, PrimitiveTypeRedefinitionTest) {
-  auto result = ParseTestInput(
+  auto result_or_error = ParseTestInput(
+      "\n"
       "primitive Foo(1, 1);\n"
       "primitive Bar(1, 1);\n"
       "primitive Foo(4, 4);\n");
 
-  ASSERT_TRUE(result.error);
+  ASSERT_TRUE(std::holds_alternative<ParseErrorWithLocation>(result_or_error));
+  auto& error = std::get<ParseErrorWithLocation>(result_or_error);
 
-  EXPECT_EQ(3, result.error->location.line_number);
-  EXPECT_EQ(11, result.error->location.column_number);
+  EXPECT_EQ(4, error.location.line_number);
+  EXPECT_EQ(11, error.location.column_number);
   TypeRedefinition* type_redefinition =
-      std::get_if<TypeRedefinition>(&(result.error->error));
+      std::get_if<TypeRedefinition>(&(error.error));
   ASSERT_TRUE(type_redefinition);
-  EXPECT_EQ(1, DefinedAt(type_redefinition->original_definition).line_number);
-  EXPECT_EQ(1, DefinedAt(type_redefinition->original_definition).column_number);
-  EXPECT_EQ("Foo", BaseTypeName(type_redefinition->original_definition));
+  EXPECT_EQ(2, type_redefinition->original_definition_location.line_number);
+  EXPECT_EQ(1, type_redefinition->original_definition_location.column_number);
 }

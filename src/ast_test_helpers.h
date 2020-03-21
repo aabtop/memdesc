@@ -4,10 +4,10 @@
 #include <optional>
 #include <string>
 
-#include "parse_results.h"
+#include "parser_wrapper.h"
 
-ParseResults ParseTestInput(std::string str);
+ParseResultsOrError ParseTestInput(std::string str);
 
-ParseResults ParseTestInputWithDefaultPrimitives(std::string str);
+ParseResultsOrError ParseTestInputWithDefaultPrimitives(std::string str);
 
 #endif  // MEMDESC_AST_TEST_HELPERS_H_

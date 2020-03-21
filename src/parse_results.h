@@ -11,21 +11,11 @@
 #include "ast.h"
 #include "parse_error.h"
 
-struct Error {
-  SourceLocation location;
-  ParseError error;
-};
-
-std::string ToString(const Error& error);
+std::string ToString(const ParseErrorWithLocation& error);
 
 struct ParseResults {
   std::unordered_map<std::string, std::unique_ptr<Primitive>> primitives;
   std::unordered_map<std::string, std::unique_ptr<Struct>> structs;
-
-  std::optional<Error> error;
-
-  // Is the parse completed?  True implies not only completion but also success.
-  bool complete = false;
 };
 
 std::string ToString(const ParseResults& parse_results);

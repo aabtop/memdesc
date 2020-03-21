@@ -10,9 +10,8 @@ std::string ToString(const UndeclaredTypeReference& e) {
 }
 
 std::string ToString(const TypeRedefinition& e) {
-  return "Redefinition of type '" + BaseTypeName(e.original_definition) +
-         "', originally defined at " +
-         ToString(DefinedAt(e.original_definition)) + ".";
+  return "Redefinition of type originally defined at " +
+         ToString(e.original_definition_location) + ".";
 }
 
 std::string ToString(const GenericError& e) {

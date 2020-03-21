@@ -11,7 +11,7 @@ struct UndeclaredTypeReference {
 };
 
 struct TypeRedefinition {
-  BaseType original_definition;
+  SourceLocation original_definition_location;
 };
 
 struct GenericError {
@@ -24,6 +24,11 @@ struct SyntaxError {
 
 using ParseError = std::variant<
     UndeclaredTypeReference, TypeRedefinition, GenericError, SyntaxError>;
+
+struct ParseErrorWithLocation {
+  ParseError error;
+  SourceLocation location;
+};
 
 std::string ToString(const ParseError& error);
 

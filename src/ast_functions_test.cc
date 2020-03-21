@@ -5,7 +5,7 @@
 #include "ast_test_helpers.h"
 
 TEST(AstFunctionsTest, TypeName) {
-  auto result = ParseTestInputWithDefaultPrimitives(
+  auto result_or_error = ParseTestInputWithDefaultPrimitives(
       "struct Foo {"
       "  float bar;"
       "};"
@@ -13,8 +13,8 @@ TEST(AstFunctionsTest, TypeName) {
       "  Foo foo;"
       "};");
 
-  ASSERT_FALSE(result.error);
-  ASSERT_TRUE(result.complete);
+  ASSERT_FALSE(std::holds_alternative<ParseErrorWithLocation>(result_or_error));
+  auto& result = std::get<ParseResults>(result_or_error);
 
   ASSERT_EQ(2, result.structs.size());
 

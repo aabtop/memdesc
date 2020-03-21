@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "ast.h"
+#include "ast_functions.h"
 #include "parse_error.h"
 #include "parse_results.h"
 #include "parser_helper_functions.h"
@@ -22,7 +23,7 @@
   }
 
 #define EXIT_WITH_ERROR(loc, x) \
-  parse_context->results.error = Error({SOURCE_LOCATION(loc), x}); \
+  parse_context->error = ParseErrorWithLocation{x, SOURCE_LOCATION(loc)}; \
   YYERROR
 
 %}
@@ -72,7 +73,7 @@
 
 memdesc_contents:
 		memdesc_declaration_list {
-			parse_context->results.complete = true;
+			parse_context->complete = true;
 		}
 ;
 
@@ -102,7 +103,7 @@ primitive_declaration:
 
       if (auto base_type = LookupBaseType(parse_context->results, name)) {
         // Type already declared.
-        EXIT_WITH_ERROR(@2, TypeRedefinition{*base_type});
+        EXIT_WITH_ERROR(@2, TypeRedefinition{DefinedAt(*base_type)});
       } else {
         const int MAX_SIZE = std::numeric_limits<int>::max(); 
         auto size = ParseIntInRange($4, 1, MAX_SIZE);
@@ -129,7 +130,7 @@ struct_declaration:
 
       if (auto base_type = LookupBaseType(parse_context->results, name)) {
         // Type already declared.
-        EXIT_WITH_ERROR(@2, TypeRedefinition{*base_type});
+        EXIT_WITH_ERROR(@2, TypeRedefinition{DefinedAt(*base_type)});
       } else {
         $$ = new Struct{name, std::move(*($4)), SOURCE_LOCATION(@1)};
         delete $4;
