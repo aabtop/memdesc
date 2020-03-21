@@ -60,10 +60,12 @@ ParseResults ParseFromBuffer(
 ParseResults ParseFromFile(const std::string& filename) {
   std::ifstream in_file(filename);
   std::ostringstream buffer;
-  buffer << in_file.rdbuf() << "\0\0";
+  buffer << in_file.rdbuf();
   in_file.close();
 
   std::string file_contents = buffer.str();
+  file_contents += '\0';
+  file_contents += '\0';
 
   return ParseFromBuffer(file_contents.data(), file_contents.size(), filename);
 }

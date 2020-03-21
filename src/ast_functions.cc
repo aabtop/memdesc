@@ -20,8 +20,8 @@ std::string ToString(const SourceLocation& location) {
     oss << *location.filename;
   }
 
-  oss << " : " << location.line_number << " : " << location.column_number
-      << ")";
+  oss << " : line " << location.line_number << " : column "
+      << location.column_number << ")";
   
   return oss.str();
 }
@@ -45,7 +45,7 @@ std::string ToString(const BaseType& base_type) {
 
 std::string ToString(const Type& type) {
   std::ostringstream oss;
-  oss << "Type(" << ToString(type.base_type);
+  oss << "Type(" << BaseTypeName(type.base_type);
   if (type.array_count) {
     oss << ", " << *type.array_count;
   }

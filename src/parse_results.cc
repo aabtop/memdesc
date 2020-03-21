@@ -4,11 +4,13 @@
 #include <sstream>
 #include "ast.h"
 #include "ast_functions.h"
+#include "parse_error.h"
 
 std::string ToString(const Error& error) {
   std::ostringstream oss;
 
-  oss << "Error(" << ToString(error.location) << ", " << ToString(error) << ")";
+  oss << "Error(" << ToString(error.location) << ", \""
+      << ToString(error.error) << "\")";
   
   return oss.str();
 }

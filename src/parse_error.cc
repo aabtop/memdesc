@@ -6,12 +6,12 @@
 
 namespace {
 std::string ToString(const UndeclaredTypeReference& e) {
-  return "Reference to undeclared type \"" + e.type_name + "\".";
+  return "Reference to undeclared type '" + e.type_name + "'.";
 }
 
 std::string ToString(const TypeRedefinition& e) {
-  return "Redefinition of type \"" + BaseTypeName(e.original_definition) +
-         "\", originally defined at " +
+  return "Redefinition of type '" + BaseTypeName(e.original_definition) +
+         "', originally defined at " +
          ToString(DefinedAt(e.original_definition)) + ".";
 }
 
