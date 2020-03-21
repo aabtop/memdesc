@@ -10,7 +10,7 @@ std::string ToString(const UndeclaredTypeReference& e) {
 }
 
 std::string ToString(const TypeRedefinition& e) {
-  return "Redefinition of type originally defined at " +
+  return "Redefinition of type '" + e.type_name + "' originally defined at " +
          ToString(e.original_definition_location) + ".";
 }
 

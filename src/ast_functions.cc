@@ -45,7 +45,7 @@ std::string ToString(const BaseType& base_type) {
 
 std::string ToString(const Type& type) {
   std::ostringstream oss;
-  oss << "Type(" << BaseTypeName(type.base_type);
+  oss << "Type('" << BaseTypeName(type.base_type) << "'";
   if (type.array_count) {
     oss << ", " << *type.array_count;
   }

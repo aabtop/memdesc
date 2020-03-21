@@ -11,6 +11,7 @@ struct UndeclaredTypeReference {
 };
 
 struct TypeRedefinition {
+  std::string type_name;
   SourceLocation original_definition_location;
 };
 

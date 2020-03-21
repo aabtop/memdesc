@@ -22,7 +22,7 @@
     parse_context->filename \
   }
 
-#define EXIT_WITH_ERROR(loc, x) \
+#define EXIT_WITH_ERROR(x, loc) \
   parse_context->error = ParseErrorWithLocation{x, SOURCE_LOCATION(loc)}; \
   YYERROR
 
@@ -103,24 +103,25 @@ primitive_declaration:
 
       if (auto base_type = LookupBaseType(parse_context->results, name)) {
         // Type already declared.
-        EXIT_WITH_ERROR(@2, TypeRedefinition{DefinedAt(*base_type)});
+        TypeRedefinition error{name, DefinedAt(*base_type)};
+        EXIT_WITH_ERROR(error, @2);
       } else {
         const int MAX_SIZE = std::numeric_limits<int>::max(); 
         auto size = ParseIntInRange($4, 1, MAX_SIZE);
         if (!size) {
           // An invalid value was specified as the primitive size.
-          EXIT_WITH_ERROR(@4, GenericError{"Invalid size specified."});
+          EXIT_WITH_ERROR(GenericError{"Invalid size specified."}, @4);
         }
 
         auto align = ParseIntInRange($6, 1, MAX_SIZE);
         if (!align) {
           // An invalid value was specified as the primitive alignment.
-          EXIT_WITH_ERROR(@6, GenericError{"Invalid alignment specified."});
+          EXIT_WITH_ERROR(GenericError{"Invalid alignment specified."}, @6);
         }
 
         $$ = new Primitive{
             name, static_cast<int>(*size), static_cast<int>(*align),
-            SOURCE_LOCATION(@1)};
+            SOURCE_LOCATION(@2)};
       }      
     };
 
@@ -130,9 +131,10 @@ struct_declaration:
 
       if (auto base_type = LookupBaseType(parse_context->results, name)) {
         // Type already declared.
-        EXIT_WITH_ERROR(@2, TypeRedefinition{DefinedAt(*base_type)});
+        TypeRedefinition error{name, DefinedAt(*base_type)};
+        EXIT_WITH_ERROR(error, @2);
       } else {
-        $$ = new Struct{name, std::move(*($4)), SOURCE_LOCATION(@1)};
+        $$ = new Struct{name, std::move(*($4)), SOURCE_LOCATION(@2)};
         delete $4;
       }
     };
@@ -161,7 +163,7 @@ field_declaration:
 
 			if (!found) {
 				// Undefined type referenced.
-				EXIT_WITH_ERROR(@1, UndeclaredTypeReference{type_name});
+				EXIT_WITH_ERROR(UndeclaredTypeReference{type_name}, @1);
 			} else {
 	      $$ = new Field{Type{*found, array_count},
   	             			 std::string($2.text, $2.length)};
@@ -178,7 +180,7 @@ maybe_array_count:
           $2, 1, std::numeric_limits<unsigned int>::max());
       if (!array_size) {
         // An invalid value was specified as the array size.
-        EXIT_WITH_ERROR(@2, GenericError{"Invalid array size specified."});
+        EXIT_WITH_ERROR(GenericError{"Invalid array size specified."}, @2);
       } else {
         $$ = static_cast<unsigned int>(*array_size);
       }

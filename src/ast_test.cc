@@ -46,14 +46,14 @@ TEST(AstTest, MultiplePrimitiveDefTest) {
   EXPECT_EQ(4, result.primitives["Foo"]->size);
   EXPECT_EQ(8, result.primitives["Foo"]->alignment);
   EXPECT_EQ(1, result.primitives["Foo"]->defined_at.line_number);
-  EXPECT_EQ(1, result.primitives["Foo"]->defined_at.column_number);
+  EXPECT_EQ(11, result.primitives["Foo"]->defined_at.column_number);
 
   ASSERT_TRUE(result.primitives.find("Bar") != result.primitives.end());
   EXPECT_EQ("Bar", result.primitives["Bar"]->name);
   EXPECT_EQ(1, result.primitives["Bar"]->size);
   EXPECT_EQ(1, result.primitives["Bar"]->alignment);
   EXPECT_EQ(2, result.primitives["Bar"]->defined_at.line_number);
-  EXPECT_EQ(1, result.primitives["Bar"]->defined_at.column_number);
+  EXPECT_EQ(11, result.primitives["Bar"]->defined_at.column_number);
 }
 
 TEST(AstTest, SingleStructSingleField) {
@@ -236,9 +236,9 @@ TEST(AstTest, StructDefinitionLocations) {
   ASSERT_TRUE(result.structs.find("Foo") != result.structs.end());
   ASSERT_TRUE(result.structs.find("Bar") != result.structs.end());
   EXPECT_EQ(1, result.structs["Foo"]->defined_at.line_number);
-  EXPECT_EQ(1, result.structs["Foo"]->defined_at.column_number);
+  EXPECT_EQ(8, result.structs["Foo"]->defined_at.column_number);
   EXPECT_EQ(2, result.structs["Bar"]->defined_at.line_number);
-  EXPECT_EQ(1, result.structs["Bar"]->defined_at.column_number);
+  EXPECT_EQ(8, result.structs["Bar"]->defined_at.column_number);
 }
 
 TEST(AstTest, ErrorLocationTest) {
@@ -305,7 +305,8 @@ TEST(AstTest, StructTypeRedefinitionTest) {
       std::get_if<TypeRedefinition>(&(error.error));
   ASSERT_TRUE(type_redefinition);
   EXPECT_EQ(2, type_redefinition->original_definition_location.line_number);
-  EXPECT_EQ(1, type_redefinition->original_definition_location.column_number);
+  EXPECT_EQ(8, type_redefinition->original_definition_location.column_number);
+  EXPECT_EQ("Foo", type_redefinition->type_name);
 }
 
 TEST(AstTest, PrimitiveTypeRedefinitionTest) {
@@ -324,5 +325,6 @@ TEST(AstTest, PrimitiveTypeRedefinitionTest) {
       std::get_if<TypeRedefinition>(&(error.error));
   ASSERT_TRUE(type_redefinition);
   EXPECT_EQ(2, type_redefinition->original_definition_location.line_number);
-  EXPECT_EQ(1, type_redefinition->original_definition_location.column_number);
+  EXPECT_EQ(11, type_redefinition->original_definition_location.column_number);
+  EXPECT_EQ("Foo", type_redefinition->type_name);
 }
