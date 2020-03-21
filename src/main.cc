@@ -19,7 +19,7 @@ int main() {
 
     auto result = ParseFromBuffer(const_cast<char*>(line.c_str()), line.size());
     if (result.error) {
-      std::cerr << ToString(*result.error) << std::endl;
+      std::cerr << ToString (*result.error) << std::endl;
       return 1;
     }
 

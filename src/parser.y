@@ -3,7 +3,7 @@
 %define api.pure full
 %locations
 
-%parse-param { ParseResults* parse_results }
+%parse-param { ParseContext* parse_context }
 %param { void* scanner }
 
 %{
@@ -18,10 +18,11 @@
   { \
     loc.first_line, \
     loc.first_column, \
+    parse_context->filename \
   }
 
 #define EXIT_WITH_ERROR(loc, x) \
-  parse_results->error = Error({SOURCE_LOCATION(loc), x}); \
+  parse_context->results.error = Error({SOURCE_LOCATION(loc), x}); \
   YYERROR
 
 %}
@@ -71,7 +72,7 @@
 
 memdesc_contents:
 		memdesc_declaration_list {
-			parse_results->complete = true;
+			parse_context->results.complete = true;
 		}
 ;
 
@@ -83,12 +84,12 @@ memdesc_declaration_list:
 memdesc_declaration:
     struct_declaration {
 			if ($1 != nullptr) {
-				parse_results->structs[$1->name] = std::unique_ptr<Struct>($1);
+				parse_context->results.structs[$1->name] = std::unique_ptr<Struct>($1);
 			}
     }
   | primitive_declaration {
 			if ($1 != nullptr) {
-				parse_results->primitives[$1->name] = std::unique_ptr<Primitive>($1);
+				parse_context->results.primitives[$1->name] = std::unique_ptr<Primitive>($1);
 			}
     }
 ;
@@ -99,7 +100,7 @@ primitive_declaration:
     T_PARENTHESES_CLOSE T_SEMICOLON {
       std::string name($2.text, $2.length);
 
-      if (auto base_type = LookupBaseType(*parse_results, name)) {
+      if (auto base_type = LookupBaseType(parse_context->results, name)) {
         // Type already declared.
         EXIT_WITH_ERROR(@2, TypeRedefinition{*base_type});
       } else {
@@ -126,7 +127,7 @@ struct_declaration:
     T_STRUCT T_IDENTIFIER T_BLOCK_OPEN struct_body T_BLOCK_CLOSE T_SEMICOLON {
       std::string name($2.text, $2.length);
 
-      if (auto base_type = LookupBaseType(*parse_results, name)) {
+      if (auto base_type = LookupBaseType(parse_context->results, name)) {
         // Type already declared.
         EXIT_WITH_ERROR(@2, TypeRedefinition{*base_type});
       } else {
@@ -155,7 +156,7 @@ field_declaration:
       }
 
 			std::string type_name = std::string($1.text, $1.length);
-			auto found = LookupBaseType(*parse_results, type_name);
+			auto found = LookupBaseType(parse_context->results, type_name);
 
 			if (!found) {
 				// Undefined type referenced.
