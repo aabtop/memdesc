@@ -6,15 +6,6 @@
 #include "ast_functions.h"
 #include "parse_error.h"
 
-std::string ToString(const ParseErrorWithLocation& error) {
-  std::ostringstream oss;
-
-  oss << "Error(" << ToString(error.location) << ", \""
-      << ToString(error.error) << "\")";
-
-  return oss.str();
-}
-
 std::string ToString(const ParseResults& parse_results) {
   std::ostringstream oss;
   

@@ -57,6 +57,9 @@ ParseResultsOrError ParseFromBuffer(
 
 ParseResultsOrError ParseFromFile(const std::string& filename) {
   std::ifstream in_file(filename);
+  if (!in_file) {
+    return ParseErrorWithLocation{FileOpenError{filename}, {0, 0}};
+  }
   std::ostringstream buffer;
   buffer << in_file.rdbuf();
   in_file.close();

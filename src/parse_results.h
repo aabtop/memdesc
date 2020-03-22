@@ -11,8 +11,6 @@
 #include "ast.h"
 #include "parse_error.h"
 
-std::string ToString(const ParseErrorWithLocation& error);
-
 struct ParseResults {
   std::unordered_map<std::string, std::unique_ptr<Primitive>> primitives;
   std::unordered_map<std::string, std::unique_ptr<Struct>> structs;

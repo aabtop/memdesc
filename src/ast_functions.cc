@@ -17,10 +17,10 @@ std::string ToString(const SourceLocation& location) {
   oss << "(";
 
   if (location.filename) {
-    oss << *location.filename;
+    oss << *location.filename << " : ";
   }
 
-  oss << " : line " << location.line_number << " : column "
+  oss << "line " << location.line_number << " : column "
       << location.column_number << ")";
   
   return oss.str();

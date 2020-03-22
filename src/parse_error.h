@@ -1,6 +1,7 @@
 #ifndef MEMDESC_PARSE_ERROR_H_
 #define MEMDESC_PARSE_ERROR_H_
 
+#include <optional>
 #include <string>
 #include <variant>
 
@@ -23,14 +24,19 @@ struct SyntaxError {
   std::string message;
 };
 
+struct FileOpenError {
+  std::string filename;
+};
+
 using ParseError = std::variant<
-    UndeclaredTypeReference, TypeRedefinition, GenericError, SyntaxError>;
+    UndeclaredTypeReference, TypeRedefinition, GenericError, SyntaxError,
+    FileOpenError>;
+std::string ToString(const ParseError& error);
 
 struct ParseErrorWithLocation {
   ParseError error;
   SourceLocation location;
 };
-
-std::string ToString(const ParseError& error);
+std::string ToString(const ParseErrorWithLocation& error);
 
 #endif  // MEMDESC_PARSE_ERROR_H_
