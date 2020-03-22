@@ -10,8 +10,6 @@ struct SourceLocation {
   int line_number;
   int column_number;
   std::optional<std::string> filename;
-
-  bool operator==(const SourceLocation&) const = default;
 };
 
 struct Primitive {
