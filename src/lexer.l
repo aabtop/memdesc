@@ -9,6 +9,7 @@
 
 ID                [a-zA-Z][a-zA-Z0-9\-\_]*
 NATURAL_NUMBER    [1-9][0-9]*
+QUOTED_STRING     \"[^\"]*\"
 
 %x IN_COMMENT
 
@@ -52,6 +53,13 @@ NATURAL_NUMBER    [1-9][0-9]*
 "]" { return T_ARRAY_CLOSE; }
 "(" { return T_PARENTHESES_OPEN; }
 ")" { return T_PARENTHESES_CLOSE; }
+"#import" { return T_IMPORT; }
+{QUOTED_STRING} {
+  // Don't include the actual quotes in the token data.
+  yylval->token_text.text = yytext + 1;
+  yylval->token_text.length = yyleng - 2;
+  return T_QUOTED_STRING;
+}
 
 {ID} {
   yylval->token_text.text = yytext;

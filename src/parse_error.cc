@@ -27,6 +27,11 @@ std::string ToString(const FileOpenError& e) {
   return "Error opening file '" + e.filename + "'.";
 }
 
+std::string ToString(const ImportError& e) {
+  return "Error while importing file '" + e.import_filename + "':\n\t" +
+         ToString(*e.sub_error);
+}
+
 };
 
 std::string ToString(const ParseError& error) {

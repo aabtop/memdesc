@@ -1,0 +1,4 @@
+primitive float(4, 4);
+primitive int(4, 4);
+primitive double(8, 8);
+primitive char(1, 1);

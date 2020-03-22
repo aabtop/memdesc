@@ -27,4 +27,8 @@ struct TokenText {
 std::optional<long long int> ParseIntInRange(
     const TokenText& token, long long int lowest, long long int highest);
 
+bool ProcessImportStatement(
+    ParseContext* parse_context, const std::string& filename,
+    const SourceLocation& source_location);
+
 #endif  // MEMDESC_PARSER_HELPER_FUNCTIONS_H_

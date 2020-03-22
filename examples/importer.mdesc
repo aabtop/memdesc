@@ -1,0 +1,13 @@
+#import "examples/importee.mdesc"
+
+struct Foo {
+  float a;
+  char b;
+  int c;
+};
+
+struct Bar {
+  char a;
+  Foo b;
+  float a;
+};

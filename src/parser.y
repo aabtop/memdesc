@@ -42,10 +42,14 @@
 %token T_PARENTHESES_OPEN T_PARENTHESES_CLOSE
 %token T_SEMICOLON
 %token T_COMMA
+%token T_IMPORT
+%token<token_text> T_QUOTED_STRING
 
 %union { Field* field_declaration; }
 %destructor { delete $$; } <field_declaration>
 %type <field_declaration> field_declaration
+
+%type <void> import_statement
 
 %union { Struct* struct_declaration; }
 %destructor { delete $$; } <struct_declaration>
@@ -83,7 +87,8 @@ memdesc_declaration_list:
 ;
 
 memdesc_declaration:
-    struct_declaration {
+    import_statement {}
+  | struct_declaration {
 			if ($1 != nullptr) {
 				parse_context->results.structs[$1->name] = std::unique_ptr<Struct>($1);
 			}
@@ -92,6 +97,17 @@ memdesc_declaration:
 			if ($1 != nullptr) {
 				parse_context->results.primitives[$1->name] = std::unique_ptr<Primitive>($1);
 			}
+    }
+;
+
+import_statement: T_IMPORT T_QUOTED_STRING {
+      // Avoid the quotes at the beginning and the end.
+      std::string filename($2.text, $2.length);
+
+      if (!ProcessImportStatement(
+               parse_context, filename, SOURCE_LOCATION(@1))) {
+        YYERROR;
+      }
     }
 ;
 
