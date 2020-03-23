@@ -49,7 +49,7 @@ ${DOCKER_COMMAND} build -q -t test_build ${DOCKERFILE_DIRECTORY} && \
 ${DOCKER_COMMAND} run \
     --rm \
     --name test_run \
-    -it \
+    -t \
     --mount type=bind,source=${HOST_SRC_DIR},target=/build/src,readonly \
     --mount type=bind,source=${HOST_OUT_DIR},target=/build/out \
     test_build \
