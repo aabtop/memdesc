@@ -1,4 +1,4 @@
-#import "examples/importee.mdesc"
+#import "importee.mdesc"
 
 struct Foo {
   float a;

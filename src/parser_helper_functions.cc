@@ -20,7 +20,8 @@ namespace {
 
 template <typename T>
 bool MergeParseResultList(
-    const SourceLocation& source_location, const std::string& import_filename,
+    const SourceLocation& source_location,
+    const std::filesystem::path& import_filename,
     const std::unordered_map<std::string, std::unique_ptr<T>>& src_list,
     std::unordered_map<std::string, std::unique_ptr<T>>* dest_list,
     ParseContext* parse_context) {
@@ -61,7 +62,8 @@ bool MergeParseResultList(
 // merge *after* importing the file, so that definitions that exist in the
 // importer, prior to the import, cannot affect the import results.
 bool MergeParseResults(
-    const SourceLocation& source_location, const std::string& import_filename,
+    const SourceLocation& source_location,
+    const std::filesystem::path& import_filename,
     const ParseResults& merge_source, ParseContext* parse_context) {
   return MergeParseResultList(
              source_location, import_filename,
@@ -77,16 +79,34 @@ bool MergeParseResults(
 }  // namespace
 
 bool ProcessImportStatement(
-    ParseContext* parse_context, const std::string& filename,
+    ParseContext* parse_context, const std::filesystem::path& filename,
     const SourceLocation& source_location) {
-  auto result_or_error = ParseFromFile(filename);
+  std::filesystem::path absolute_import_path;
+  if (filename.is_relative()) {
+    if (!parse_context->filename) {
+      parse_context->error = ParseErrorWithLocation{
+          GenericError{
+              "Import file path cannot be relative if the importer is not a "
+              "file."
+          },
+          source_location
+      };
+      return false;
+    }
+
+    absolute_import_path = parse_context->filename->parent_path() / filename;
+  } else {
+    absolute_import_path = filename;
+  }
+
+  auto result_or_error = ParseFromFile(absolute_import_path);
 
   if (auto error = std::get_if<ParseErrorWithLocation>(&result_or_error)) {
     // Propagate the error to the parse_context and return false to notify
     // the parser grammar logic that an error has occured.
     parse_context->error = ParseErrorWithLocation{
         ImportError{
-            filename,
+            absolute_import_path,
             std::make_unique<ParseErrorWithLocation>(std::move(*error))
         },
         source_location

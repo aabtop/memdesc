@@ -58,6 +58,8 @@ ParseResultsOrError ParseFromBuffer(
 }
 
 ParseResultsOrError ParseFromFile(const fs::path& filename) {
+  assert(filename.is_absolute());
+
   std::ifstream in_file(filename);
   if (!in_file) {
     return ParseErrorWithLocation{FileOpenError{filename}, {0, 0}};

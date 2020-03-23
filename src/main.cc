@@ -1,3 +1,4 @@
+#include <filesystem>
 #include <iostream>
 #include <string>
 
@@ -10,8 +11,13 @@ int main(int argc, const char** args) {
     return 1;
   }
 
+  std::filesystem::path input_filename(args[1]);
+  if (input_filename.is_relative()) {
+    input_filename = std::filesystem::current_path() / input_filename;
+  }
+
   // Parse out of a file if a filename is passed.
-  auto results_or_error = ParseFromFile(args[1]);
+  auto results_or_error = ParseFromFile(input_filename);
 
   if (const auto error =
           std::get_if<ParseErrorWithLocation>(&results_or_error)) {
