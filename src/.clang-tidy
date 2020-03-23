@@ -1,0 +1,11 @@
+Checks: >
+  readability-*,
+  identifier-naming,
+  misc-assert-side-effect,
+  performance-*,
+  google-*,
+  portability-*,
+  misc-*,
+  bugprone-*
+
+WarningsAsErrors: "*"
