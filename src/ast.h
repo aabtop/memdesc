@@ -22,8 +22,7 @@ struct Primitive {
 
 struct Struct;
 
-using BaseType =
-    std::variant<Struct*, Primitive*>;
+using BaseType = std::variant<Struct*, Primitive*>;
 
 struct Type {
   BaseType base_type;

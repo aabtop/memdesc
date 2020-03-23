@@ -13,7 +13,7 @@ std::string JoinWith(const std::vector<F>& v, const std::string& join_string) {
 
 std::string ToString(const SourceLocation& location) {
   std::ostringstream oss;
-  
+
   oss << "(";
 
   if (location.filename) {
@@ -22,14 +22,14 @@ std::string ToString(const SourceLocation& location) {
 
   oss << "line " << location.line_number << " : column "
       << location.column_number << ")";
-  
+
   return oss.str();
 }
 
 std::string ToString(const Primitive& primitive) {
   std::ostringstream oss;
-  oss << "Primitive(" << primitive.name << ", "
-      << primitive.size << ", " << primitive.alignment << ")";
+  oss << "Primitive(" << primitive.name << ", " << primitive.size << ", "
+      << primitive.alignment << ")";
   return oss.str();
 }
 
@@ -70,10 +70,9 @@ const std::string& BaseTypeName(const BaseType& base_type) {
 }
 
 const SourceLocation& DefinedAt(const BaseType& base_type) {
-  return std::visit([](auto& x) -> const SourceLocation& {
-                      return x->defined_at;
-                    },
-                    base_type);
+  return std::visit(
+      [](auto& x) -> const SourceLocation& { return x->defined_at; },
+      base_type);
 }
 
 const Primitive* AsPrimitive(const BaseType& base_type) {

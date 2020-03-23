@@ -1,8 +1,9 @@
+#include "ast.h"
+
 #include <gtest/gtest.h>
 
 #include <memory>
 
-#include "ast.h"
 #include "ast_functions.h"
 #include "ast_test_helpers.h"
 #include "parse_error.h"

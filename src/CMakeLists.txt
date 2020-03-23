@@ -79,6 +79,9 @@ add_executable(memdesc
 
 target_link_libraries(memdesc memdesc_lib)
 
+configure_file(.clang-tidy .clang-tidy COPYONLY)
+configure_file(.clang-format .clang-format COPYONLY)
+
 ################################################################################
 # Unit tests
 ################################################################################

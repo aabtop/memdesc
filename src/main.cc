@@ -17,7 +17,7 @@ int main(int argc, const char** args) {
           std::get_if<ParseErrorWithLocation>(&results_or_error)) {
     std::cerr << ToString(*error) << std::endl;
     return 1;
-  }  
+  }
 
   const auto& results = std::get<ParseResults>(results_or_error);
 
