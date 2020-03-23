@@ -6,7 +6,7 @@
 template <typename F>
 std::string JoinWith(const std::vector<F>& v, const std::string& join_string) {
   return std::accumulate(std::next(v.begin()), v.end(), ToString(v[0]),
-                         [&join_string](std::string a, F b) {
+                         [&join_string](const std::string& a, F b) {
                            return a + join_string + ToString(b);
                          });
 }

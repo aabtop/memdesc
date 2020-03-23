@@ -31,5 +31,5 @@ if shutil.which('run-clang-tidy'):
     ('third_party' in x))]
 
   # Run clang-tidy.
-  subprocess.run(['run-clang-tidy', '-header-filter=src/', '-p=./']
+  subprocess.run(['run-clang-tidy', '-quiet', '-header-filter=src/', '-p=./']
                  + files_to_scan).check_returncode()

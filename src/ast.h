@@ -1,6 +1,7 @@
 #ifndef MEMDESC_AST_H_
 #define MEMDESC_AST_H_
 
+#include <filesystem>
 #include <optional>
 #include <string>
 #include <variant>
@@ -9,7 +10,7 @@
 struct SourceLocation {
   int line_number;
   int column_number;
-  std::optional<std::string> filename;
+  std::optional<std::filesystem::path> filename;
 };
 
 struct Primitive {

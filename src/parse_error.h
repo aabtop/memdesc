@@ -1,6 +1,7 @@
 #ifndef MEMDESC_PARSE_ERROR_H_
 #define MEMDESC_PARSE_ERROR_H_
 
+#include <filesystem>
 #include <memory>
 #include <optional>
 #include <string>
@@ -26,7 +27,7 @@ struct SyntaxError {
 };
 
 struct FileOpenError {
-  std::string filename;
+  std::filesystem::path filename;
 };
 
 struct ParseErrorWithLocation;
@@ -34,7 +35,7 @@ struct ParseErrorWithLocation;
 // Error occurred within an #import call, so track the "sub error" as well
 // as the file that we were importing at the time.
 struct ImportError {
-  std::string import_filename;
+  std::filesystem::path import_filename;
   std::unique_ptr<ParseErrorWithLocation> sub_error;
 };
 

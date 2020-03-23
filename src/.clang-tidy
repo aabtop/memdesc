@@ -8,7 +8,8 @@ Checks: >
   misc-*,
   bugprone-*,
   llvm-*,
-  -llvm-header-guard
+  -llvm-header-guard,
+  -bugprone-exception-escape
 
 WarningsAsErrors: "*"
 

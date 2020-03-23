@@ -1,13 +1,14 @@
 #ifndef MEMDESC_PARSER_HELPER_FUNCTIONS_H_
 #define MEMDESC_PARSER_HELPER_FUNCTIONS_H_
 
+#include <filesystem>
 #include <optional>
 #include <string>
 
 #include "parse_results.h"
 
 struct ParseContext {
-  const std::optional<std::string> filename;
+  const std::optional<std::filesystem::path> filename;
 
   ParseResults results;
 

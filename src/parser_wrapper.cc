@@ -10,6 +10,8 @@
 #include "parse_results.h"
 #include "parser.tab.cc"
 
+namespace fs = std::filesystem;
+
 void yyerror(
 		YYLTYPE *locp, ParseContext* parse_context, void* scanner,
     char const *msg) {
@@ -24,7 +26,7 @@ void yyerror(
 }
 
 ParseResultsOrError ParseFromBuffer(
-    char* input, size_t size, const std::optional<std::string>& filename) {
+    char* input, size_t size, const std::optional<fs::path>& filename) {
   if (size < 2 || input[size-2] != '\0' || input[size-1] != '\0') {
     return ParseErrorWithLocation{
         GenericError{
@@ -55,7 +57,7 @@ ParseResultsOrError ParseFromBuffer(
   return std::move(parse_context.results);
 }
 
-ParseResultsOrError ParseFromFile(const std::string& filename) {
+ParseResultsOrError ParseFromFile(const fs::path& filename) {
   std::ifstream in_file(filename);
   if (!in_file) {
     return ParseErrorWithLocation{FileOpenError{filename}, {0, 0}};
