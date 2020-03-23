@@ -32,7 +32,7 @@ std::string ToString(const ImportError& e) {
          ToString(*e.sub_error);
 }
 
-};
+}  // namespace
 
 std::string ToString(const ParseError& error) {
   return std::visit([](auto& x) -> std::string { return ToString(x); }, error);

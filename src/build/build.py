@@ -30,7 +30,6 @@ if shutil.which('run-clang-tidy'):
     ('lexer_wrapper' in x) or
     ('third_party' in x))]
 
-  print(str(files_to_scan))
-
-  # Run the linter.
-  subprocess.run(['run-clang-tidy'] + files_to_scan).check_returncode()
+  # Run clang-tidy.
+  subprocess.run(['run-clang-tidy', '-header-filter=src/', '-p=./']
+                 + files_to_scan).check_returncode()

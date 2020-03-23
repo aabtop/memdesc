@@ -9,7 +9,8 @@ ParseResultsOrError ParseTestInput(std::string str) {
   return ParseFromBuffer(str.data(), str.length());
 }
 
-ParseResultsOrError ParseTestInputWithDefaultPrimitives(std::string str) {
+ParseResultsOrError ParseTestInputWithDefaultPrimitives(
+    const std::string& str) {
   std::string initial_primitives_defs =
       "primitive float(4, 4);"
       "primitive int32_t(4, 4);"

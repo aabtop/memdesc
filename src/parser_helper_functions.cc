@@ -7,13 +7,13 @@
 
 #include <iostream>
 
-std::optional<long long int> ParseIntInRange(
-    const TokenText& token, long long int lowest, long long int highest) {
+std::optional<int64_t> ParseIntInRange(
+    const TokenText& token, int64_t lowest, int64_t highest) {
   std::string number_as_text(token.text, token.length);
-  long long int as_long_int = strtol(number_as_text.c_str(), NULL, 10);
+  int64_t as_long_int = strtol(number_as_text.c_str(), NULL, 10);
 
   return (as_long_int < lowest || as_long_int > highest) ?
-             std::nullopt : std::optional<long long int>(as_long_int);
+             std::nullopt : std::optional<int64_t>(as_long_int);
 }
 
 namespace {

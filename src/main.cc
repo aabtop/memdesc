@@ -3,9 +3,13 @@
 
 #include "parse_results.h"
 #include "parser_wrapper.h"
-#include "lexer_wrapper.h"
 
 int main(int argc, const char** args) {
+  if (argc != 2) {
+    std::cerr << "Usage: memdesc <INPUT FILE>" << std::endl;
+    return 1;
+  }
+
   // Parse out of a file if a filename is passed.
   auto results_or_error = ParseFromFile(args[1]);
 

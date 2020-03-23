@@ -24,8 +24,8 @@ struct TokenText {
   int length;
 };
 
-std::optional<long long int> ParseIntInRange(
-    const TokenText& token, long long int lowest, long long int highest);
+std::optional<int64_t> ParseIntInRange(
+    const TokenText& token, int64_t lowest, int64_t highest);
 
 bool ProcessImportStatement(
     ParseContext* parse_context, const std::string& filename,

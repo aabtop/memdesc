@@ -2,6 +2,7 @@
 
 #include <optional>
 #include <sstream>
+
 #include "ast.h"
 #include "ast_functions.h"
 #include "parse_error.h"
@@ -24,7 +25,7 @@ std::string ToString(const ParseResults& parse_results) {
 }
 
 std::optional<BaseType> LookupBaseType(
-    const ParseResults& parse_results, std::string name) {
+    const ParseResults& parse_results, const std::string& name) {
   auto found_primitive = parse_results.primitives.find(name);
   if (found_primitive != parse_results.primitives.end()) {
     return BaseType(found_primitive->second.get());

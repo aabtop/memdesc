@@ -1,11 +1,15 @@
 Checks: >
+  clang-*,
   readability-*,
-  identifier-naming,
-  misc-assert-side-effect,
+  identifier-*,
   performance-*,
   google-*,
   portability-*,
   misc-*,
-  bugprone-*
+  bugprone-*,
+  llvm-*,
+  -llvm-header-guard
 
 WarningsAsErrors: "*"
+
+FormatStyle: "google"

@@ -36,11 +36,12 @@ std::string ToString(const Primitive& primitive) {
 std::string ToString(const BaseType& base_type) {
   if (auto primitive = std::get_if<Primitive*>(&base_type)) {
     return ToString(**primitive);
-  } else if (auto struct_type = std::get_if<Struct*>(&base_type)) {
-    return ToString(**struct_type);
-  } else {
-    return std::string("Unknown Type");
   }
+  if (auto struct_type = std::get_if<Struct*>(&base_type)) {
+    return ToString(**struct_type);
+  }
+
+  return std::string("Unknown Type");
 }
 
 std::string ToString(const Type& type) {
@@ -78,15 +79,13 @@ const SourceLocation& DefinedAt(const BaseType& base_type) {
 const Primitive* AsPrimitive(const BaseType& base_type) {
   if (std::holds_alternative<Primitive*>(base_type)) {
     return std::get<Primitive*>(base_type);
-  } else {
-    return nullptr;
   }
+  return nullptr;
 }
 
 const Struct* AsStruct(const BaseType& base_type) {
   if (std::holds_alternative<Struct*>(base_type)) {
     return std::get<Struct*>(base_type);
-  } else {
-    return nullptr;
   }
+  return nullptr;
 }

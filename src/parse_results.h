@@ -19,6 +19,6 @@ struct ParseResults {
 std::string ToString(const ParseResults& parse_results);
 
 std::optional<BaseType> LookupBaseType(
-    const ParseResults& parse_results, std::string name);
+    const ParseResults& parse_results, const std::string& name);
 
 #endif  // MEMDESC_PARSE_RESULTS_H_

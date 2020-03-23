@@ -8,6 +8,6 @@
 
 ParseResultsOrError ParseTestInput(std::string str);
 
-ParseResultsOrError ParseTestInputWithDefaultPrimitives(std::string str);
+ParseResultsOrError ParseTestInputWithDefaultPrimitives(const std::string& str);
 
 #endif  // MEMDESC_AST_TEST_HELPERS_H_
