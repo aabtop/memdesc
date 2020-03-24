@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.13)
 
 # set the project name and version
-project(BuildTest VERSION 1.0)
+project(memdesc VERSION 1.0)
 
 # specify the C++ standard
 set(CMAKE_CXX_STANDARD 17)
@@ -86,6 +86,12 @@ target_link_libraries(memdesc memdesc_lib)
 configure_file(.clang-tidy .clang-tidy COPYONLY)
 configure_file(.clang-format .clang-format COPYONLY)
 
+install(TARGETS memdesc
+        DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/package)
+install(DIRECTORY runtime_data_files/
+        DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/package
+        PATTERN "README.md" EXCLUDE)
+
 ################################################################################
 # Unit tests
 ################################################################################
@@ -118,4 +124,5 @@ add_executable(memdesc_tests ${UNIT_TEST_SRCS})
 target_link_libraries(memdesc_tests memdesc_lib gtest gtest_main)
 
 file(COPY examples DESTINATION .)
+file(COPY runtime_data_files/ DESTINATION .)
 add_test(MemdescUnitTests memdesc_tests)

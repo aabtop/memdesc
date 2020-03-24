@@ -3,6 +3,7 @@
 
 #include <filesystem>
 #include <optional>
+#include <string>
 
 enum PreambleType {
   PreambleType_Default,
@@ -11,6 +12,7 @@ enum PreambleType {
   PreambleType_End,
   PreambleType_Begin = 0,
 };
+std::string ToString(PreambleType preamble_type);
 
 struct CommandLineArguments {
   std::filesystem::path input_file;

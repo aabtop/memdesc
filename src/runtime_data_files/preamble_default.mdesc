@@ -1,0 +1,11 @@
+primitive int64_t(8, 8);
+primitive int32_t(4, 4);
+primitive int16_t(2, 2);
+primitive int8_t(1, 1);
+primitive uint64_t(8, 8);
+primitive uint32_t(4, 4);
+primitive uint16_t(2, 2);
+primitive uint8_t(1, 1);
+primitive float(4, 4);
+primitive double(8, 8);
+primitive char(1, 1);

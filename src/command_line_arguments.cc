@@ -6,8 +6,6 @@
 #include <sstream>
 #include <string>
 
-namespace {
-
 std::string ToString(PreambleType preamble_type) {
   switch (preamble_type) {
     case PreambleType_Default: {
@@ -23,6 +21,8 @@ std::string ToString(PreambleType preamble_type) {
   assert(false);
   return "invalid";
 }
+
+namespace {
 
 std::optional<PreambleType> ParsePreamble(const std::string& preamble_str) {
   for (int i = PreambleType_Begin; i < PreambleType_End; ++i) {

@@ -1,5 +1,5 @@
-#ifndef MEMDESC_PARSE_IMPORT_STATEMENT_H_
-#define MEMDESC_PARSE_IMPORT_STATEMENT_H_
+#ifndef MEMDESC_PROCESS_IMPORT_STATEMENT_H_
+#define MEMDESC_PROCESS_IMPORT_STATEMENT_H_
 
 #include <filesystem>
 
@@ -10,4 +10,4 @@ bool ProcessImportStatement(ParseContext* parse_context,
                             const std::filesystem::path& filename,
                             const SourceLocation& source_location);
 
-#endif  // MEMDESC_PARSE_IMPORT_STATEMENT_H_
+#endif  // MEMDESC_PROCESS_IMPORT_STATEMENT_H_

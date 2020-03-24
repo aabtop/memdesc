@@ -1,0 +1,11 @@
+struct Foo {
+  float a;
+  char b;
+  int32_t c;
+};
+
+struct Bar {
+  char a;
+  Foo b;
+  float a;
+};
