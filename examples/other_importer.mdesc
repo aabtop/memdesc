@@ -1,0 +1,7 @@
+#import "importee.mdesc"
+
+struct Rey {
+  float a;
+  char b;
+  int c;
+};

@@ -22,10 +22,10 @@ template <typename T>
 bool MergeParseResultList(
     const SourceLocation& source_location,
     const std::filesystem::path& import_filename,
-    const std::unordered_map<std::string, std::unique_ptr<T>>& src_list,
+    std::unordered_map<std::string, std::unique_ptr<T>>&& src_list,
     std::unordered_map<std::string, std::unique_ptr<T>>* dest_list,
     ParseContext* parse_context) {
-  for (const auto& item : src_list) {
+  for (auto&& item : src_list) {
     auto found = dest_list->find(item.first);
     if (found != dest_list->end()) {
       if (!(found->second->defined_at == item.second->defined_at)) {
@@ -50,7 +50,7 @@ bool MergeParseResultList(
     } else {
       // No collisions, we're now safe to copy the importee's definition into
       // our outer definition set.
-      (*dest_list)[item.first] = std::make_unique<T>(*item.second);
+      (*dest_list)[item.first] = std::move(item.second);
     }
   }
 
@@ -64,14 +64,14 @@ bool MergeParseResultList(
 bool MergeParseResults(
     const SourceLocation& source_location,
     const std::filesystem::path& import_filename,
-    const ParseResults& merge_source, ParseContext* parse_context) {
+    ParseResults&& merge_source, ParseContext* parse_context) {
   return MergeParseResultList(
              source_location, import_filename,
-             merge_source.primitives, &parse_context->results.primitives,
+             std::move(merge_source.primitives), &parse_context->results.primitives,
              parse_context) &&
          MergeParseResultList(
              source_location, import_filename,
-             merge_source.structs, &parse_context->results.structs,
+             std::move(merge_source.structs), &parse_context->results.structs,
              parse_context);
 }
 
@@ -98,6 +98,7 @@ bool ProcessImportStatement(
   } else {
     absolute_import_path = filename;
   }
+  absolute_import_path = std::filesystem::canonical(absolute_import_path);
 
   auto result_or_error = ParseFromFile(absolute_import_path);
 
@@ -117,6 +118,6 @@ bool ProcessImportStatement(
 
   // Merge the importee parse results into the main parse results.
   return MergeParseResults(
-             source_location, filename, std::get<ParseResults>(result_or_error),
+             source_location, filename, std::move(std::get<ParseResults>(result_or_error)),
              parse_context);
 }

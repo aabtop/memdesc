@@ -15,6 +15,7 @@ int main(int argc, const char** args) {
   if (input_filename.is_relative()) {
     input_filename = std::filesystem::current_path() / input_filename;
   }
+  input_filename = std::filesystem::canonical(input_filename);
 
   // Parse out of a file if a filename is passed.
   auto results_or_error = ParseFromFile(input_filename);
