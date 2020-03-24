@@ -16,6 +16,8 @@ std::string ToString(PreambleType preamble_type) {
     case PreambleType_None: {
       return "none";
     } break;
+    case PreambleType_End:
+      break;
   }
 
   assert(false);
