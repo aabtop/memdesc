@@ -91,6 +91,7 @@ set(UNIT_TEST_SRCS
   ast_test_helpers.h
   ast_test.cc
   ast_functions_test.cc
+  parse_file_tests.cc
 )
 
 # Override gtest's  aults.
@@ -112,4 +113,5 @@ link_directories(${gtest_BINARY_DIR})
 add_executable(memdesc_tests ${UNIT_TEST_SRCS})
 target_link_libraries(memdesc_tests memdesc_lib gtest gtest_main)
 
+file(COPY examples DESTINATION .)
 add_test(MemdescUnitTests memdesc_tests)

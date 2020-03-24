@@ -4,4 +4,5 @@ struct Rey {
   float a;
   char b;
   int c;
+  int f;
 };
