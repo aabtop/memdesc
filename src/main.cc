@@ -2,23 +2,20 @@
 #include <iostream>
 #include <string>
 
+#include "command_line_arguments.h"
 #include "parse_results.h"
 #include "parser_wrapper.h"
 
 int main(int argc, const char** args) {
-  if (argc != 2) {
-    std::cerr << "Usage: memdesc <INPUT FILE>" << std::endl;
+  std::optional<CommandLineArguments> arguments = ParseCommandLine(argc, args);
+  if (!arguments) {
+    std::cerr << std::endl;
+    PrintUsage();
     return 1;
   }
 
-  std::filesystem::path input_filename(args[1]);
-  if (input_filename.is_relative()) {
-    input_filename = std::filesystem::current_path() / input_filename;
-  }
-  input_filename = std::filesystem::canonical(input_filename);
-
   // Parse out of a file if a filename is passed.
-  auto results_or_error = ParseFromFile(input_filename);
+  auto results_or_error = ParseFromFile(arguments->input_file);
 
   if (const auto error =
           std::get_if<ParseErrorWithLocation>(&results_or_error)) {

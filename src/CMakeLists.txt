@@ -56,10 +56,14 @@ add_library(memdesc_lib
   ast.h
   ast_functions.cc
   ast_functions.h
+  command_line_arguments.cc
+  command_line_arguments.h
   lexer_wrapper.cc
   lexer_wrapper.h
   parse_error.cc
   parse_error.h
+  process_import_statement.cc
+  process_import_statement.h
   parse_results.cc
   parse_results.h
   parser_helper_functions.cc

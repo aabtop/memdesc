@@ -14,6 +14,7 @@
 #include "parse_error.h"
 #include "parse_results.h"
 #include "parser_helper_functions.h"
+#include "process_import_statement.h"
 
 #define SOURCE_LOCATION(loc) \
   { \
