@@ -6,6 +6,7 @@
 #include "command_line_arguments.h"
 #include "parse_results.h"
 #include "parser_wrapper.h"
+#include "target_registry.h"
 
 int main(int argc, const char** args) {
   std::optional<CommandLineArguments> arguments = ParseCommandLine(argc, args);
@@ -51,7 +52,7 @@ int main(int argc, const char** args) {
 
   const auto& results = std::get<ParseResults>(results_or_error);
 
-  std::cout << "Successful parse.  Result: " << std::endl;
-  std::cout << ToString(results) << std::endl << std::endl;
+  (*GetGlobalTargetRegistry())[arguments->target](results, std::cout);
+
   return 0;
 }

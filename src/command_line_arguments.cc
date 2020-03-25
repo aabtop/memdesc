@@ -6,6 +6,8 @@
 #include <sstream>
 #include <string>
 
+#include "target_registry.h"
+
 std::string ToString(PreambleType preamble_type) {
   switch (preamble_type) {
     case PreambleType_Default: {
@@ -49,6 +51,23 @@ std::string GetValidPreambleStrings() {
   return oss.str();
 }
 
+std::string GetValidTargetStrings() {
+  const TargetRegistry& target_registry = *GetGlobalTargetRegistry();
+
+  std::ostringstream oss;
+  oss << "(";
+
+  int counted_targets = 0;
+  for (const auto& target : target_registry) {
+    oss << target.first;
+    if (++counted_targets < target_registry.size()) {
+      oss << ", ";
+    }
+  }
+  oss << ")";
+  return oss.str();
+}
+
 std::optional<std::filesystem::path> CanonicalizeFile(
     const std::filesystem::path& file_path) {
   std::filesystem::path absolute_file_path =
@@ -71,6 +90,7 @@ std::optional<CommandLineArguments> ParseCommandLine(int argc,
   CommandLineArguments result;
 
   bool parsed_input_file = false;
+  bool parsed_target = false;
   for (int i = 1; i < argc; ++i) {
     std::string current_arg(args[i]);
 
@@ -87,6 +107,24 @@ std::optional<CommandLineArguments> ParseCommandLine(int argc,
         return std::nullopt;
       }
       result.preamble = *preamble;
+      continue;
+    }
+
+    if (current_arg == "-t" || current_arg == "--target") {
+      if (++i >= argc) {
+        std::cerr << "Missing parameter for '--target'." << std::endl;
+        return std::nullopt;
+      }
+
+      const TargetRegistry& target_registry = *GetGlobalTargetRegistry();
+      if (target_registry.find(args[i]) == target_registry.end()) {
+        std::cerr << "Invalid '--target' parameter." << std::endl;
+        std::cerr << "Valid values are: " << GetValidTargetStrings()
+                  << std::endl;
+        return std::nullopt;
+      }
+      result.target = args[i];
+      parsed_target = true;
       continue;
     }
 
@@ -110,6 +148,13 @@ std::optional<CommandLineArguments> ParseCommandLine(int argc,
     return std::nullopt;
   }
 
+  if (!parsed_target) {
+    std::cerr
+        << "The '--target' parameter was not specified.  Valid values are: "
+        << GetValidTargetStrings() << std::endl;
+    return std::nullopt;
+  }
+
   return result;
 }
 
@@ -118,9 +163,16 @@ void PrintUsage() {
             << std::endl
             << std::endl;
   std::cerr << "  INPUT FILE: The file to be parsed." << std::endl;
-  std::cerr << "  [-p | --preamble PREAMBLE_VALUE]: Indicates whether or not a "
-               "'preamble' source file will be parsed to provide definitions "
-               "for a basic set of types.  May be one of: "
-            << GetValidPreambleStrings() << std::endl;
+  std::cerr
+      << "  [(-p | --preamble) PREAMBLE_VALUE]: Indicates whether or not a "
+         "'preamble' source file will be parsed to provide definitions "
+         "for a basic set of types.  Default value is: '"
+      << ToString(CommandLineArguments().preamble)
+      << "'. May be one of: " << GetValidPreambleStrings() << std::endl;
+  std::cerr << "  [(-t | --target) TARGET_VALUE]: Required.  Indicates which "
+               "target to convert the memdesc definitions into.  Typically a "
+               "single separate target exists for each different programming "
+               "language. Possible values are: "
+            << GetValidTargetStrings() << std::endl;
   std::cerr << std::endl;
 }

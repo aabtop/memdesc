@@ -18,6 +18,7 @@ struct CommandLineArguments {
   std::filesystem::path input_file;
 
   PreambleType preamble = PreambleType_Default;
+  std::string target;
 };
 
 std::optional<CommandLineArguments> ParseCommandLine(int argc,

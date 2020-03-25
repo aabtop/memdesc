@@ -70,6 +70,9 @@ add_library(memdesc_lib
   parser_helper_functions.h
   parser_wrapper.cc
   parser_wrapper.h
+  target_registry.h
+  target_registry.cc
+  targets/ast_dump.cc
   ${PARSER_HEADER_OUTPUT}
   ${LEXER_HEADER_OUTPUT}
   )
