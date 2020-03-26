@@ -183,24 +183,57 @@ add_test(MemdescUnitTests memdesc_tests)
 # C end-to-end tests
 ################################################################################
 
+# The high-level target to build and run all tests.
+add_custom_target(end_to_end_c_tests)
+
 # These tests will invoke a freshly built version of memdesc on a list of
 # test datas, and then compile a C program that uses the test data.  This
 # ensures that we have end-to-end functionality for C.
 include_directories(${GENERATED_SOURCE_TEST_DIRECTORY})
 
-add_custom_command(OUTPUT ${GENERATED_SOURCE_TEST_DIRECTORY}/simple_desc.h
-    COMMAND ${PACKAGE_MEMDESC_EXECUTABLE} ${CMAKE_SOURCE_DIR}/end_to_end_c_tests/simple_desc.mdesc -t c -o ${GENERATED_SOURCE_TEST_DIRECTORY}/simple_desc.h
-    DEPENDS ensure_gen_source_test_directory_exists memdesc)
+# This function setups up the machinery to use a freshly built version of
+# the memdesc project on data files in order to translate them into C headers.
+# The C headers are then #included by C (or C++) source files to ensure that
+# they can compile and that everything works end-to-end.
+# MEMDESC_SOURCES and CC_SOURCES are both relative to
+# ${GENERATED_SOURCE_TEST_DIRECTORY}
+function(define_end_to_end_c_test PARAM_NAME)
+  cmake_parse_arguments(PARAM "AS_CXX" "" "CC_SOURCES;MEMDESC_SOURCES" ${ARGN})
+  set(TEST_OUTPUT_TARGET "end_to_end_c_test_${PARAM_NAME}")
 
-add_custom_target(end_to_end_c_test_c_simple_desc DEPENDS ${GENERATED_SOURCE_TEST_DIRECTORY}/simple_desc.h memdesc)
+  SET(ABSOLUTE_CC_SOURCES "")
+  foreach(SRC ${PARAM_CC_SOURCES})
+    LIST(APPEND ABSOLUTE_CC_SOURCES "end_to_end_c_tests/${SRC}")
+    set_source_files_properties(filename.c PROPERTIES LANGUAGE CXX )
+  endforeach()
 
-add_executable(end_to_end_c_test_c_simple
-  end_to_end_c_tests/simple.c
-  ${GENERATED_SOURCE_TEST_DIRECTORY}/simple_desc.h
-)
-set_source_files_properties(${GENERATED_SOURCE_TEST_DIRECTORY}/simple_desc.h
-                            PROPERTIES GENERATED TRUE)
-add_dependencies(end_to_end_c_test_c_simple end_to_end_c_test_c_simple_desc)
+  add_executable(${TEST_OUTPUT_TARGET} ${ABSOLUTE_CC_SOURCES})
 
-add_custom_target(end_to_end_c_tests
-  DEPENDS end_to_end_c_test_c_simple)
+  foreach(MEMDESC_SOURCE ${PARAM_MEMDESC_SOURCES})
+    get_filename_component(MEMDESC_SOURCE_WE ${MEMDESC_SOURCE} NAME_WE)
+    set(OUTPUT_MEMDESC_FILE
+        ${GENERATED_SOURCE_TEST_DIRECTORY}/${MEMDESC_SOURCE_WE}.h)
+
+    add_custom_command(
+      OUTPUT ${OUTPUT_MEMDESC_FILE}
+      COMMAND ${PACKAGE_MEMDESC_EXECUTABLE}
+              ${CMAKE_SOURCE_DIR}/end_to_end_c_tests/${MEMDESC_SOURCE}
+              -t c
+              -o ${OUTPUT_MEMDESC_FILE}
+      DEPENDS ensure_gen_source_test_directory_exists memdesc)
+
+    set(MDESC_OUTPUT_TARGET "${TEST_OUTPUT_TARGET}_${MEMDESC_SOURCE_WE}")
+    add_custom_target(${MDESC_OUTPUT_TARGET}
+                      DEPENDS ${OUTPUT_MEMDESC_FILE} memdesc)
+
+    add_dependencies(${TEST_OUTPUT_TARGET} ${MDESC_OUTPUT_TARGET})
+  endforeach()
+
+  add_dependencies(end_to_end_c_tests ${TEST_OUTPUT_TARGET})
+endfunction()
+
+define_end_to_end_c_test(
+  simple_c CC_SOURCES simple.c MEMDESC_SOURCES simple_desc.mdesc)
+define_end_to_end_c_test(
+  simple_cc AS_CXX CC_SOURCES simple.cc MEMDESC_SOURCES simple_desc.mdesc)
+  
