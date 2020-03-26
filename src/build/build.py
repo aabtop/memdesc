@@ -15,13 +15,25 @@ src_folder = os.path.join(
 )
 
 os.chdir(args.out_folder)
+
+# Build the main executable.
 subprocess.run(
     ["cmake", "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON", src_folder]
 ).check_returncode()
-subprocess.run(["cmake", "--build", "."]).check_returncode()
+subprocess.run(
+    ["cmake", "--build", ".", "--target", "memdesc"]
+).check_returncode()
 
-# Run the tests.
+# Build and run the tests.
+subprocess.run(
+    ["cmake", "--build", ".", "--target", "memdesc_tests"]
+).check_returncode()
 subprocess.run(["ctest", "--output-on-failure"]).check_returncode()
+
+# Build and run the end-to-end tests.
+subprocess.run(
+    ["cmake", "--build", ".", "--target", "end_to_end_c_tests"]
+).check_returncode()
 
 # Run clang-tidy, if it's available.
 if shutil.which("run-clang-tidy"):
