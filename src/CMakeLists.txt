@@ -10,10 +10,16 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 find_package(BISON REQUIRED)
 find_package(FLEX REQUIRED)
 
+set(PACKAGE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/package)
 set(GENERATED_SOURCE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/gen)
+set(GENERATED_SOURCE_TEST_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/gen/test)
 
+add_custom_target(ensure_package_directory_exists
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${PACKAGE_DIRECTORY})
 add_custom_target(ensure_gen_source_directory_exists
     COMMAND ${CMAKE_COMMAND} -E make_directory ${GENERATED_SOURCE_DIRECTORY})
+add_custom_target(ensure_gen_source_test_directory_exists
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${GENERATED_SOURCE_TEST_DIRECTORY})
 
 if (BISON_FOUND)
   # Using a custom command instead of "bison_target" because bison doesn't like
@@ -90,11 +96,28 @@ target_link_libraries(memdesc memdesc_lib)
 configure_file(.clang-tidy .clang-tidy COPYONLY)
 configure_file(.clang-format .clang-format COPYONLY)
 
-install(TARGETS memdesc
-        DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/package)
-install(DIRECTORY runtime_data_files/
-        DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/package
-        PATTERN "README.md" EXCLUDE)
+# Setup the output executable as well as its dependent data files to all be
+# copied into a package directory together.
+set(PACKAGE_MEMDESC_EXECUTABLE ${PACKAGE_DIRECTORY}/memdesc${CMAKE_EXECUTABLE_SUFFIX})
+
+
+add_custom_command(
+  TARGET memdesc
+  POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:memdesc> ${PACKAGE_MEMDESC_EXECUTABLE}
+  DEPENDS ensure_package_directory_exists)
+
+file(GLOB PREAMBLE_FILES ${CMAKE_SOURCE_DIR}/runtime_data_files/*.mdesc)
+foreach(PREAMBLE_FILE ${PREAMBLE_FILES})
+  get_filename_component(PREAMBLE_FILENAME_ONLY ${PREAMBLE_FILE} NAME)
+  set(COPIED_PREAMBLE_FILE ${PACKAGE_DIRECTORY}/${PREAMBLE_FILENAME_ONLY})
+
+  add_custom_command(
+      TARGET memdesc
+      POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy ${PREAMBLE_FILE} ${COPIED_PREAMBLE_FILE}
+      DEPENDS ensure_package_directory_exists ${PREAMBLE_FILE})
+endforeach()
 
 ################################################################################
 # Unit tests
@@ -130,3 +153,29 @@ target_link_libraries(memdesc_tests memdesc_lib gtest gtest_main)
 file(COPY examples DESTINATION .)
 file(COPY runtime_data_files/ DESTINATION .)
 add_test(MemdescUnitTests memdesc_tests)
+
+################################################################################
+# C end-to-end tests
+################################################################################
+
+# These tests will invoke a freshly built version of memdesc on a list of
+# test datas, and then compile a C program that uses the test data.  This
+# ensures that we have end-to-end functionality for C.
+include_directories(${GENERATED_SOURCE_TEST_DIRECTORY})
+
+add_custom_command(OUTPUT ${GENERATED_SOURCE_TEST_DIRECTORY}/simple_desc.h
+    COMMAND ${PACKAGE_MEMDESC_EXECUTABLE} ${CMAKE_SOURCE_DIR}/end_to_end_c_tests/simple_desc.mdesc -t c > ${GENERATED_SOURCE_TEST_DIRECTORY}/simple_desc.h
+    DEPENDS ensure_gen_source_test_directory_exists memdesc)
+
+add_custom_target(end_to_end_c_test_c_simple_desc DEPENDS ${GENERATED_SOURCE_TEST_DIRECTORY}/simple_desc.h memdesc)
+
+add_executable(end_to_end_c_test_c_simple
+  end_to_end_c_tests/simple.c
+  ${GENERATED_SOURCE_TEST_DIRECTORY}/simple_desc.h
+)
+set_source_files_properties(${GENERATED_SOURCE_TEST_DIRECTORY}/simple_desc.h
+                            PROPERTIES GENERATED TRUE)
+add_dependencies(end_to_end_c_test_c_simple end_to_end_c_test_c_simple_desc)
+
+add_custom_target(end_to_end_c_tests
+  DEPENDS end_to_end_c_test_c_simple)

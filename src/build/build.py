@@ -18,9 +18,7 @@ os.chdir(args.out_folder)
 subprocess.run(
     ["cmake", "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON", src_folder]
 ).check_returncode()
-subprocess.run(
-    ["cmake", "--build", ".", "--target", "install"]
-).check_returncode()
+subprocess.run(["cmake", "--build", "."]).check_returncode()
 
 # Run the tests.
 subprocess.run(["ctest", "--output-on-failure"]).check_returncode()

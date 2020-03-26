@@ -9,7 +9,8 @@ Checks: >
   bugprone-*,
   llvm-*,
   -llvm-header-guard,
-  -bugprone-exception-escape
+  -bugprone-exception-escape,
+  -misc-unused-parameters
 
 WarningsAsErrors: "*"
 
