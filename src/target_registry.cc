@@ -2,14 +2,13 @@
 
 #include <cassert>
 
-extern std::optional<TargetError> MakeASTDump(const ParseResults&,
-                                              std::ostream&);
+extern std::optional<TargetError> OutputASTDump(const ParseResults&,
+                                                std::ostream&);
+extern std::optional<TargetError> OutputC(const ParseResults&, std::ostream&);
 
 namespace {
 TargetRegistry CreateTargetRegistry() {
-  return TargetRegistry{
-      {"ast_dump", MakeASTDump},
-  };
+  return TargetRegistry{{"ast_dump", OutputASTDump}, {"c", OutputC}};
 }
 }  // namespace
 

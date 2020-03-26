@@ -42,7 +42,7 @@ std::string GetValidPreambleStrings() {
   oss << "(";
   for (int i = PreambleType_Begin; i < PreambleType_End; ++i) {
     PreambleType as_preamble_type = static_cast<PreambleType>(i);
-    oss << ToString(as_preamble_type);
+    oss << "'" << ToString(as_preamble_type) << "'";
     if (i < PreambleType_End - 1) {
       oss << ", ";
     }
@@ -59,7 +59,7 @@ std::string GetValidTargetStrings() {
 
   int counted_targets = 0;
   for (const auto& target : target_registry) {
-    oss << target.first;
+    oss << "'" << target.first << "'";
     if (++counted_targets < target_registry.size()) {
       oss << ", ";
     }

@@ -73,6 +73,7 @@ add_library(memdesc_lib
   target_registry.h
   target_registry.cc
   targets/ast_dump.cc
+  targets/c.cc
   ${PARSER_HEADER_OUTPUT}
   ${LEXER_HEADER_OUTPUT}
   )
