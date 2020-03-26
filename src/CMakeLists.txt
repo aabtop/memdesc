@@ -1,5 +1,37 @@
 cmake_minimum_required(VERSION 3.13)
 
+################################################################################
+# Helper Functions
+################################################################################
+
+function(copy_file_with_custom_command)
+  cmake_parse_arguments(PARAM "" "TARGET;SRC_FILE;DST_FILE" "ADDITIONAL_DEPENDS" ${ARGN})
+  add_custom_command(
+    TARGET ${PARAM_TARGET}
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy ${PARAM_SRC_FILE} ${PARAM_DST_FILE}
+    DEPENDS ${PARAM_SRC_FILE} ${PARAM_ADDITIONAL_DEPENDS}
+  )
+endfunction()
+
+function(copy_glob_to_dir_with_custom_command)
+  cmake_parse_arguments(PARAM "" "TARGET;GLOB_PATTERN;DST_DIR" "ADDITIONAL_DEPENDS" ${ARGN})
+  file(GLOB GLOB_FILES ${PARAM_GLOB_PATTERN})
+  foreach(GLOB_FILE ${GLOB_FILES})
+    get_filename_component(GLOB_FILENAME_ONLY ${GLOB_FILE} NAME)
+    set(COPIED_GLOB_FILE ${PARAM_DST_DIR}/${GLOB_FILENAME_ONLY})
+    copy_file_with_custom_command(
+      TARGET ${PARAM_TARGET}
+      SRC_FILE ${GLOB_FILE}
+      DST_FILE ${COPIED_GLOB_FILE}
+      ADDITIONAL_DEPENDS ${PARAM_ADDITIONAL_DEPENDS})
+  endforeach()
+endfunction()
+
+################################################################################
+# Main Project Definition
+################################################################################
+
 # set the project name and version
 project(memdesc VERSION 1.0)
 
@@ -100,24 +132,17 @@ configure_file(.clang-format .clang-format COPYONLY)
 # copied into a package directory together.
 set(PACKAGE_MEMDESC_EXECUTABLE ${PACKAGE_DIRECTORY}/memdesc${CMAKE_EXECUTABLE_SUFFIX})
 
-
-add_custom_command(
+copy_file_with_custom_command(
   TARGET memdesc
-  POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:memdesc> ${PACKAGE_MEMDESC_EXECUTABLE}
-  DEPENDS ensure_package_directory_exists)
+  SRC_FILE $<TARGET_FILE:memdesc>
+  DST_FILE ${PACKAGE_MEMDESC_EXECUTABLE}
+  ADDITIONAL_DEPENDS ensure_package_directory_exists)
 
-file(GLOB PREAMBLE_FILES ${CMAKE_SOURCE_DIR}/runtime_data_files/*.mdesc)
-foreach(PREAMBLE_FILE ${PREAMBLE_FILES})
-  get_filename_component(PREAMBLE_FILENAME_ONLY ${PREAMBLE_FILE} NAME)
-  set(COPIED_PREAMBLE_FILE ${PACKAGE_DIRECTORY}/${PREAMBLE_FILENAME_ONLY})
-
-  add_custom_command(
-      TARGET memdesc
-      POST_BUILD
-      COMMAND ${CMAKE_COMMAND} -E copy ${PREAMBLE_FILE} ${COPIED_PREAMBLE_FILE}
-      DEPENDS ensure_package_directory_exists ${PREAMBLE_FILE})
-endforeach()
+copy_glob_to_dir_with_custom_command(
+  TARGET memdesc
+  GLOB_PATTERN ${CMAKE_SOURCE_DIR}/runtime_data_files/*.mdesc
+  DST_DIR ${PACKAGE_DIRECTORY}
+  ADDITIONAL_DEPENDS ensure_package_directory_exists)
 
 ################################################################################
 # Unit tests
@@ -164,7 +189,7 @@ add_test(MemdescUnitTests memdesc_tests)
 include_directories(${GENERATED_SOURCE_TEST_DIRECTORY})
 
 add_custom_command(OUTPUT ${GENERATED_SOURCE_TEST_DIRECTORY}/simple_desc.h
-    COMMAND ${PACKAGE_MEMDESC_EXECUTABLE} ${CMAKE_SOURCE_DIR}/end_to_end_c_tests/simple_desc.mdesc -t c > ${GENERATED_SOURCE_TEST_DIRECTORY}/simple_desc.h
+    COMMAND ${PACKAGE_MEMDESC_EXECUTABLE} ${CMAKE_SOURCE_DIR}/end_to_end_c_tests/simple_desc.mdesc -t c -o ${GENERATED_SOURCE_TEST_DIRECTORY}/simple_desc.h
     DEPENDS ensure_gen_source_test_directory_exists memdesc)
 
 add_custom_target(end_to_end_c_test_c_simple_desc DEPENDS ${GENERATED_SOURCE_TEST_DIRECTORY}/simple_desc.h memdesc)

@@ -128,6 +128,16 @@ std::optional<CommandLineArguments> ParseCommandLine(int argc,
       continue;
     }
 
+    if (current_arg == "-o" || current_arg == "--output_file") {
+      if (++i >= argc) {
+        std::cerr << "Missing parameter for '--output_file'." << std::endl;
+        return std::nullopt;
+      }
+
+      result.output_file = args[i];
+      continue;
+    }
+
     // Handle the positional required arguments.
     if (parsed_input_file) {
       return std::nullopt;
@@ -163,16 +173,19 @@ void PrintUsage() {
             << std::endl
             << std::endl;
   std::cerr << "  INPUT FILE: The file to be parsed." << std::endl;
-  std::cerr
-      << "  [(-p | --preamble) PREAMBLE_VALUE]: Indicates whether or not a "
-         "'preamble' source file will be parsed to provide definitions "
-         "for a basic set of types.  Default value is: '"
-      << ToString(CommandLineArguments().preamble)
-      << "'. May be one of: " << GetValidPreambleStrings() << std::endl;
-  std::cerr << "  [(-t | --target) TARGET_VALUE]: Required.  Indicates which "
-               "target to convert the memdesc definitions into.  Typically a "
+  std::cerr << "  [(-p | --preamble) PREAMBLE_VALUE]: Optional. Indicates "
+               "whether or not a "
+               "'preamble' source file will be parsed to provide definitions "
+               "for a basic set of types.  Default value is: '"
+            << ToString(CommandLineArguments().preamble)
+            << "'. May be one of: " << GetValidPreambleStrings() << std::endl;
+  std::cerr << "  [(-t | --target) TARGET_VALUE]: Required. Indicates which "
+               "target to convert the memdesc definitions into. Typically a "
                "single separate target exists for each different programming "
                "language. Possible values are: "
             << GetValidTargetStrings() << std::endl;
+  std::cerr << "  [(-o | --output_file) OUTPUT_FILE_VALUE]: Optional. If "
+               "specified, output will be stored in the file specified. If "
+               "left unspecified, output will be sent to stdout.";
   std::cerr << std::endl;
 }

@@ -1,4 +1,5 @@
 #include <filesystem>
+#include <fstream>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -52,7 +53,32 @@ int main(int argc, const char** args) {
 
   const auto& results = std::get<ParseResults>(results_or_error);
 
-  (*GetGlobalTargetRegistry())[arguments->target](results, std::cout);
+  // Write the results into an in-memory buffer so that we can later decide
+  // where those results end up going (and if there's an error in generating
+  // the output we can avoid creating a file that ends up being corrupt).
+  std::ostringstream oss;
+  auto possible_error =
+      (*GetGlobalTargetRegistry())[arguments->target](results, oss);
+
+  if (possible_error) {
+    std::cerr << "Error generating output for target '" << arguments->target
+              << "': " << *possible_error << std::endl;
+    return 1;
+  }
+
+  std::ostream* out = &std::cout;
+  std::optional<std::ofstream> possible_output_file;
+  if (arguments->output_file) {
+    std::ofstream out_file(arguments->output_file->c_str());
+    if (!out_file) {
+      std::cerr << "Error opening output file, " << *arguments->output_file
+                << " for writing." << std::endl;
+      return 1;
+    }
+    out_file << oss.str();
+  } else {
+    std::cout << oss.str();
+  }
 
   return 0;
 }
