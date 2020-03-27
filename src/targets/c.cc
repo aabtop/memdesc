@@ -4,6 +4,12 @@
 std::optional<TargetError> OutputC(const ParseResults& parse_results,
                                    std::ostream& out) {
   out << "#include <stdint.h>" << std::endl;
+  out << std::endl;
+
+  out << "#ifdef __cplusplus" << std::endl;
+  out << "extern \"C\" {" << std::endl;
+  out << "#endif" << std::endl;
+  out << std::endl;
 
   for (const auto& item : parse_results.structs) {
     const auto& parsed_struct = *item.second;
@@ -24,6 +30,20 @@ std::optional<TargetError> OutputC(const ParseResults& parse_results,
 
     out << "} " << parsed_struct.name << ";" << std::endl;
   }
+  out << std::endl;
+
+  out << "#ifdef __cplusplus" << std::endl;
+  out << "}  // extern \"C\"" << std::endl;
+  out << "#endif" << std::endl;
+  out << std::endl;
+
+  out << "#if __cplusplus && (__cplusplus >= 201103L || _MSC_VER >= 1900)"
+      << std::endl;
+  out << "// Static assertions to verify memdesc's assumptions." << std::endl;
+  out << "static_assert(sizeof(float) == 4);" << std::endl;
+  out << "#endif  // __cplusplus && (__cplusplus >= 201103L || _MSC_VER >= "
+         "1900)"
+      << std::endl;
 
   return std::nullopt;
 }
