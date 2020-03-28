@@ -27,7 +27,7 @@ using BaseType = std::variant<Struct*, Primitive*>;
 
 struct Type {
   BaseType base_type;
-  std::optional<unsigned int> array_count;
+  std::optional<int> array_count;
 };
 
 struct Field {
