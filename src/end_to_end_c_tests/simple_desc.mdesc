@@ -2,6 +2,6 @@ struct Foo {
   uint32_t a;
   float b;
   char c;
-  int32_t d;
+  char d;
+  int32_t e;
 };
-

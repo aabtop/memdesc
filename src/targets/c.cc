@@ -47,6 +47,7 @@ std::optional<TargetError> OutputC(const ParseResults& parse_results,
     out << "#endif  // __cplusplus && (__cplusplus >= 201103L || _MSC_VER >= "
            "1900)"
         << std::endl;
+    out << std::endl;
   }
 
   out << "#ifdef __cplusplus" << std::endl;

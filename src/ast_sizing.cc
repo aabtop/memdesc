@@ -58,8 +58,8 @@ int OffsetOfField(const Struct& owning_struct, int field_index) {
   assert(field_index < owning_struct.fields.size());
   int offset = 0;
   for (int i = 0; i < field_index; ++i) {
-    offset += RoundUp(SizeOf(owning_struct.fields[i].type),
-                      AlignOf(owning_struct.fields[i + 1].type));
+    offset = RoundUp(offset + SizeOf(owning_struct.fields[i].type),
+                     AlignOf(owning_struct.fields[i + 1].type));
   }
   return offset;
 }

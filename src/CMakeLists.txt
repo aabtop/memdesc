@@ -219,14 +219,18 @@ function(define_end_to_end_c_test PARAM_NAME)
     get_filename_component(MEMDESC_SOURCE_WE ${MEMDESC_SOURCE} NAME_WE)
     set(OUTPUT_MEMDESC_FILE
         ${GENERATED_SOURCE_TEST_DIRECTORY}/${MEMDESC_SOURCE_WE}.h)
+    set(INPUT_MEMDESC_FILE
+        ${CMAKE_SOURCE_DIR}/end_to_end_c_tests/${MEMDESC_SOURCE})
 
     add_custom_command(
       OUTPUT ${OUTPUT_MEMDESC_FILE}
       COMMAND ${PACKAGE_MEMDESC_EXECUTABLE}
-              ${CMAKE_SOURCE_DIR}/end_to_end_c_tests/${MEMDESC_SOURCE}
+              ${INPUT_MEMDESC_FILE}
               -t c
               -o ${OUTPUT_MEMDESC_FILE}
-      DEPENDS ensure_gen_source_test_directory_exists memdesc)
+      DEPENDS ensure_gen_source_test_directory_exists
+              memdesc
+              ${INPUT_MEMDESC_FILE})
 
     set(MDESC_OUTPUT_TARGET "${TEST_OUTPUT_TARGET}_${MEMDESC_SOURCE_WE}")
     add_custom_target(${MDESC_OUTPUT_TARGET}
