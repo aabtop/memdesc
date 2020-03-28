@@ -43,8 +43,8 @@ int AlignOf(const Struct& s) {
 }
 
 int SizeOf(const Struct& s) {
+  // https://en.cppreference.com/w/cpp/language/sizeof
   if (s.fields.empty()) {
-    // https://en.cppreference.com/w/cpp/language/sizeof
     return 1;
   }
 
