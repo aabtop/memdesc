@@ -1,6 +1,6 @@
-#include <filesystem>
-
 #include <gtest/gtest.h>
+
+#include <filesystem>
 
 #include "ast.h"
 #include "ast_functions.h"

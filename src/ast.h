@@ -33,6 +33,8 @@ struct Type {
 struct Field {
   Type type;
   std::string name;
+
+  SourceLocation defined_at;
 };
 
 struct Struct {

@@ -13,8 +13,8 @@ struct UndeclaredTypeReference {
   std::string type_name;
 };
 
-struct TypeRedefinition {
-  std::string type_name;
+struct RedefinitionError {
+  std::string name;
   SourceLocation original_definition_location;
 };
 
@@ -39,9 +39,9 @@ struct ImportError {
   std::unique_ptr<ParseErrorWithLocation> sub_error;
 };
 
-using ParseError = std::variant<
-    UndeclaredTypeReference, TypeRedefinition, GenericError, SyntaxError,
-    FileOpenError, ImportError>;
+using ParseError =
+    std::variant<UndeclaredTypeReference, RedefinitionError, GenericError,
+                 SyntaxError, FileOpenError, ImportError>;
 
 std::string ToString(const ParseError& error);
 

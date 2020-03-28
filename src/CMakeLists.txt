@@ -94,6 +94,8 @@ add_library(memdesc_lib
   ast.h
   ast_functions.cc
   ast_functions.h
+  ast_sizing.cc
+  ast_sizing.h
   command_line_arguments.cc
   command_line_arguments.h
   lexer_wrapper.cc
@@ -199,6 +201,10 @@ include_directories(${GENERATED_SOURCE_TEST_DIRECTORY})
 # ${GENERATED_SOURCE_TEST_DIRECTORY}
 function(define_end_to_end_c_test PARAM_NAME)
   cmake_parse_arguments(PARAM "AS_CXX" "" "CC_SOURCES;MEMDESC_SOURCES" ${ARGN})
+
+  set(CMAKE_CXX_STANDARD 17)
+  set(CMAKE_CXX_STANDARD_REQUIRED True)
+
   set(TEST_OUTPUT_TARGET "end_to_end_c_test_${PARAM_NAME}")
 
   SET(ABSOLUTE_CC_SOURCES "")

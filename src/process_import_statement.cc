@@ -22,12 +22,12 @@ bool MergeParseResultList(
         // We seem to have found two separate definitions between
         // two different files, raise an error and return in error.
         parse_context->error = ParseErrorWithLocation{
-            ImportError{
-                import_filename,
-                std::unique_ptr<ParseErrorWithLocation>(
-                    new ParseErrorWithLocation{
-                        TypeRedefinition{item.first, found->second->defined_at},
-                        item.second->defined_at})},
+            ImportError{import_filename,
+                        std::unique_ptr<ParseErrorWithLocation>(
+                            new ParseErrorWithLocation{
+                                RedefinitionError{item.first,
+                                                  found->second->defined_at},
+                                item.second->defined_at})},
             source_location};
         return false;
       }

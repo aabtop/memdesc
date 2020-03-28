@@ -12,5 +12,5 @@ struct Foo {
 struct Bar {
   char a;
   Foo b;
-  float a;
+  float c;
 };

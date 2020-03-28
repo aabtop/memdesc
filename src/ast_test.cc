@@ -302,12 +302,35 @@ TEST(AstTest, StructTypeRedefinitionTest) {
 
   EXPECT_EQ(4, error.location.line_number);
   EXPECT_EQ(8, error.location.column_number);
-  TypeRedefinition* type_redefinition =
-      std::get_if<TypeRedefinition>(&(error.error));
+  RedefinitionError* type_redefinition =
+      std::get_if<RedefinitionError>(&(error.error));
   ASSERT_TRUE(type_redefinition);
   EXPECT_EQ(2, type_redefinition->original_definition_location.line_number);
   EXPECT_EQ(8, type_redefinition->original_definition_location.column_number);
-  EXPECT_EQ("Foo", type_redefinition->type_name);
+  EXPECT_EQ("Foo", type_redefinition->name);
+}
+
+TEST(AstTest, StructFieldRedefinitionTest) {
+  auto result_or_error = ParseTestInput(
+      "struct Foo {};\n"
+      "struct Bar {};\n"
+      "struct StructWithError {\n"
+      "  Foo a;\n"
+      "  Bar b;\n"
+      "  Bar a;\n"
+      "};\n");
+
+  ASSERT_TRUE(std::holds_alternative<ParseErrorWithLocation>(result_or_error));
+  auto& error = std::get<ParseErrorWithLocation>(result_or_error);
+
+  EXPECT_EQ(6, error.location.line_number);
+  EXPECT_EQ(7, error.location.column_number);
+  RedefinitionError* field_redefinition =
+      std::get_if<RedefinitionError>(&(error.error));
+  ASSERT_TRUE(field_redefinition);
+  EXPECT_EQ(4, field_redefinition->original_definition_location.line_number);
+  EXPECT_EQ(7, field_redefinition->original_definition_location.column_number);
+  EXPECT_EQ("a", field_redefinition->name);
 }
 
 TEST(AstTest, PrimitiveTypeRedefinitionTest) {
@@ -322,10 +345,10 @@ TEST(AstTest, PrimitiveTypeRedefinitionTest) {
 
   EXPECT_EQ(4, error.location.line_number);
   EXPECT_EQ(11, error.location.column_number);
-  TypeRedefinition* type_redefinition =
-      std::get_if<TypeRedefinition>(&(error.error));
+  RedefinitionError* type_redefinition =
+      std::get_if<RedefinitionError>(&(error.error));
   ASSERT_TRUE(type_redefinition);
   EXPECT_EQ(2, type_redefinition->original_definition_location.line_number);
   EXPECT_EQ(11, type_redefinition->original_definition_location.column_number);
-  EXPECT_EQ("Foo", type_redefinition->type_name);
+  EXPECT_EQ("Foo", type_redefinition->name);
 }

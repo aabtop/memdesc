@@ -120,7 +120,7 @@ primitive_declaration:
 
       if (auto base_type = LookupBaseType(parse_context->results, name)) {
         // Type already declared.
-        TypeRedefinition error{name, DefinedAt(*base_type)};
+        RedefinitionError error{name, DefinedAt(*base_type)};
         EXIT_WITH_ERROR(error, @2);
       } else {
         const int MAX_SIZE = std::numeric_limits<int>::max(); 
@@ -144,15 +144,29 @@ primitive_declaration:
 
 struct_declaration:
     T_STRUCT T_IDENTIFIER T_BLOCK_OPEN struct_body T_BLOCK_CLOSE T_SEMICOLON {
-      std::string name($2.text, $2.length);
+      std::unique_ptr<std::vector<Field>> fields($4);
+      
+      // Now that we have all the fields collected, verify that there are no
+      // duplicates.
+      for (size_t i = 0; i < fields->size(); ++i) {
+        for (size_t j = i + 1; j < fields->size(); ++j) {
+          if ((*fields)[i].name == (*fields)[j].name) {
+            parse_context->error = ParseErrorWithLocation{
+                RedefinitionError{(*fields)[i].name,
+                                  (*fields)[i].defined_at},
+                (*fields)[j].defined_at}; \
+            YYERROR;
+          }
+        }
+      }
 
+      std::string name($2.text, $2.length);
       if (auto base_type = LookupBaseType(parse_context->results, name)) {
         // Type already declared.
-        TypeRedefinition error{name, DefinedAt(*base_type)};
+        RedefinitionError error{name, DefinedAt(*base_type)};
         EXIT_WITH_ERROR(error, @2);
       } else {
-        $$ = new Struct{name, std::move(*($4)), SOURCE_LOCATION(@2)};
-        delete $4;
+        $$ = new Struct{name, std::move(*fields), SOURCE_LOCATION(@2)};
       }
     };
 
@@ -183,7 +197,7 @@ field_declaration:
 				EXIT_WITH_ERROR(UndeclaredTypeReference{type_name}, @1);
 			} else {
 	      $$ = new Field{Type{*found, array_count},
-  	             			 std::string($2.text, $2.length)};
+  	             			 std::string($2.text, $2.length), SOURCE_LOCATION(@2)};
 			}
     }
 ;
