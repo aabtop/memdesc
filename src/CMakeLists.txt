@@ -246,4 +246,6 @@ define_end_to_end_c_test(
   simple_c CC_SOURCES simple.c MEMDESC_SOURCES simple_desc.mdesc)
 define_end_to_end_c_test(
   simple_cc AS_CXX CC_SOURCES simple.cc MEMDESC_SOURCES simple_desc.mdesc)
-  
+define_end_to_end_c_test(
+  multiple_structs_cc AS_CXX CC_SOURCES multiple_structs.cc MEMDESC_SOURCES multiple_structs.mdesc)
+        

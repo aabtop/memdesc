@@ -25,41 +25,41 @@ TEST(ParseFileTest, ParseSimpleFile) {
   ASSERT_FALSE(std::holds_alternative<ParseErrorWithLocation>(result_or_error));
   auto& result = std::get<ParseResults>(result_or_error);
 
-  ASSERT_EQ(4, result.primitives.size());
+  ASSERT_EQ(4, result.primitives().size());
 
-  ASSERT_TRUE(result.primitives.find("float") != result.primitives.end());
-  EXPECT_EQ(4, result.primitives["float"]->size);
-  EXPECT_EQ(4, result.primitives["float"]->alignment);
-  EXPECT_EQ(filename, result.primitives["float"]->defined_at.filename);
+  ASSERT_TRUE(result.primitives().find("float") != result.primitives().end());
+  EXPECT_EQ(4, result.primitives().at("float")->size);
+  EXPECT_EQ(4, result.primitives().at("float")->alignment);
+  EXPECT_EQ(filename, result.primitives().at("float")->defined_at.filename);
 
-  ASSERT_TRUE(result.primitives.find("int") != result.primitives.end());
-  EXPECT_EQ(4, result.primitives["int"]->size);
-  EXPECT_EQ(4, result.primitives["int"]->alignment);
-  EXPECT_EQ(filename, result.primitives["int"]->defined_at.filename);
+  ASSERT_TRUE(result.primitives().find("int") != result.primitives().end());
+  EXPECT_EQ(4, result.primitives().at("int")->size);
+  EXPECT_EQ(4, result.primitives().at("int")->alignment);
+  EXPECT_EQ(filename, result.primitives().at("int")->defined_at.filename);
 
-  ASSERT_TRUE(result.primitives.find("double") != result.primitives.end());
-  EXPECT_EQ(8, result.primitives["double"]->size);
-  EXPECT_EQ(8, result.primitives["double"]->alignment);
-  EXPECT_EQ(filename, result.primitives["double"]->defined_at.filename);
+  ASSERT_TRUE(result.primitives().find("double") != result.primitives().end());
+  EXPECT_EQ(8, result.primitives().at("double")->size);
+  EXPECT_EQ(8, result.primitives().at("double")->alignment);
+  EXPECT_EQ(filename, result.primitives().at("double")->defined_at.filename);
 
-  ASSERT_TRUE(result.primitives.find("char") != result.primitives.end());
-  EXPECT_EQ(1, result.primitives["char"]->size);
-  EXPECT_EQ(1, result.primitives["char"]->alignment);
-  EXPECT_EQ(filename, result.primitives["char"]->defined_at.filename);
+  ASSERT_TRUE(result.primitives().find("char") != result.primitives().end());
+  EXPECT_EQ(1, result.primitives().at("char")->size);
+  EXPECT_EQ(1, result.primitives().at("char")->alignment);
+  EXPECT_EQ(filename, result.primitives().at("char")->defined_at.filename);
 
-  ASSERT_EQ(2, result.structs.size());
+  ASSERT_EQ(2, result.structs().size());
 
-  ASSERT_TRUE(result.structs.find("Foo") != result.structs.end());
-  ASSERT_EQ(3, result.structs["Foo"]->fields.size());
-  EXPECT_EQ(filename, result.structs["Foo"]->defined_at.filename);
-  EXPECT_EQ(6, result.structs["Foo"]->defined_at.line_number);
-  EXPECT_EQ(8, result.structs["Foo"]->defined_at.column_number);
+  ASSERT_TRUE(result.structs().find("Foo") != result.structs().end());
+  ASSERT_EQ(3, result.structs().at("Foo")->fields.size());
+  EXPECT_EQ(filename, result.structs().at("Foo")->defined_at.filename);
+  EXPECT_EQ(6, result.structs().at("Foo")->defined_at.line_number);
+  EXPECT_EQ(8, result.structs().at("Foo")->defined_at.column_number);
 
-  ASSERT_TRUE(result.structs.find("Bar") != result.structs.end());
-  ASSERT_EQ(3, result.structs["Bar"]->fields.size());
-  EXPECT_EQ(filename, result.structs["Bar"]->defined_at.filename);
-  EXPECT_EQ(12, result.structs["Bar"]->defined_at.line_number);
-  EXPECT_EQ(8, result.structs["Bar"]->defined_at.column_number);
+  ASSERT_TRUE(result.structs().find("Bar") != result.structs().end());
+  ASSERT_EQ(3, result.structs().at("Bar")->fields.size());
+  EXPECT_EQ(filename, result.structs().at("Bar")->defined_at.filename);
+  EXPECT_EQ(12, result.structs().at("Bar")->defined_at.line_number);
+  EXPECT_EQ(8, result.structs().at("Bar")->defined_at.column_number);
 }
 
 TEST(ParseFileTest, ParseFileWithImport) {
@@ -71,42 +71,45 @@ TEST(ParseFileTest, ParseFileWithImport) {
   ASSERT_FALSE(std::holds_alternative<ParseErrorWithLocation>(result_or_error));
   auto& result = std::get<ParseResults>(result_or_error);
 
-  ASSERT_EQ(4, result.primitives.size());
+  ASSERT_EQ(4, result.primitives().size());
 
-  ASSERT_TRUE(result.primitives.find("float") != result.primitives.end());
-  EXPECT_EQ(4, result.primitives["float"]->size);
-  EXPECT_EQ(4, result.primitives["float"]->alignment);
-  EXPECT_EQ(importee_filename, result.primitives["float"]->defined_at.filename);
-
-  ASSERT_TRUE(result.primitives.find("int") != result.primitives.end());
-  EXPECT_EQ(4, result.primitives["int"]->size);
-  EXPECT_EQ(4, result.primitives["int"]->alignment);
-  EXPECT_EQ(importee_filename, result.primitives["int"]->defined_at.filename);
-
-  ASSERT_TRUE(result.primitives.find("double") != result.primitives.end());
-  EXPECT_EQ(8, result.primitives["double"]->size);
-  EXPECT_EQ(8, result.primitives["double"]->alignment);
+  ASSERT_TRUE(result.primitives().find("float") != result.primitives().end());
+  EXPECT_EQ(4, result.primitives().at("float")->size);
+  EXPECT_EQ(4, result.primitives().at("float")->alignment);
   EXPECT_EQ(importee_filename,
-            result.primitives["double"]->defined_at.filename);
+            result.primitives().at("float")->defined_at.filename);
 
-  ASSERT_TRUE(result.primitives.find("char") != result.primitives.end());
-  EXPECT_EQ(1, result.primitives["char"]->size);
-  EXPECT_EQ(1, result.primitives["char"]->alignment);
-  EXPECT_EQ(importee_filename, result.primitives["char"]->defined_at.filename);
+  ASSERT_TRUE(result.primitives().find("int") != result.primitives().end());
+  EXPECT_EQ(4, result.primitives().at("int")->size);
+  EXPECT_EQ(4, result.primitives().at("int")->alignment);
+  EXPECT_EQ(importee_filename,
+            result.primitives().at("int")->defined_at.filename);
 
-  ASSERT_EQ(2, result.structs.size());
+  ASSERT_TRUE(result.primitives().find("double") != result.primitives().end());
+  EXPECT_EQ(8, result.primitives().at("double")->size);
+  EXPECT_EQ(8, result.primitives().at("double")->alignment);
+  EXPECT_EQ(importee_filename,
+            result.primitives().at("double")->defined_at.filename);
 
-  ASSERT_TRUE(result.structs.find("Foo") != result.structs.end());
-  ASSERT_EQ(3, result.structs["Foo"]->fields.size());
-  EXPECT_EQ(filename, result.structs["Foo"]->defined_at.filename);
-  EXPECT_EQ(3, result.structs["Foo"]->defined_at.line_number);
-  EXPECT_EQ(8, result.structs["Foo"]->defined_at.column_number);
+  ASSERT_TRUE(result.primitives().find("char") != result.primitives().end());
+  EXPECT_EQ(1, result.primitives().at("char")->size);
+  EXPECT_EQ(1, result.primitives().at("char")->alignment);
+  EXPECT_EQ(importee_filename,
+            result.primitives().at("char")->defined_at.filename);
 
-  ASSERT_TRUE(result.structs.find("Bar") != result.structs.end());
-  ASSERT_EQ(3, result.structs["Bar"]->fields.size());
-  EXPECT_EQ(filename, result.structs["Bar"]->defined_at.filename);
-  EXPECT_EQ(9, result.structs["Bar"]->defined_at.line_number);
-  EXPECT_EQ(8, result.structs["Bar"]->defined_at.column_number);
+  ASSERT_EQ(2, result.structs().size());
+
+  ASSERT_TRUE(result.structs().find("Foo") != result.structs().end());
+  ASSERT_EQ(3, result.structs().at("Foo")->fields.size());
+  EXPECT_EQ(filename, result.structs().at("Foo")->defined_at.filename);
+  EXPECT_EQ(3, result.structs().at("Foo")->defined_at.line_number);
+  EXPECT_EQ(8, result.structs().at("Foo")->defined_at.column_number);
+
+  ASSERT_TRUE(result.structs().find("Bar") != result.structs().end());
+  ASSERT_EQ(3, result.structs().at("Bar")->fields.size());
+  EXPECT_EQ(filename, result.structs().at("Bar")->defined_at.filename);
+  EXPECT_EQ(9, result.structs().at("Bar")->defined_at.line_number);
+  EXPECT_EQ(8, result.structs().at("Bar")->defined_at.column_number);
 }
 
 TEST(ParseFileTest, ParseFileWithDiamondImportStructure) {
@@ -124,49 +127,52 @@ TEST(ParseFileTest, ParseFileWithDiamondImportStructure) {
   ASSERT_FALSE(std::holds_alternative<ParseErrorWithLocation>(result_or_error));
   auto& result = std::get<ParseResults>(result_or_error);
 
-  ASSERT_EQ(4, result.primitives.size());
+  ASSERT_EQ(4, result.primitives().size());
 
-  ASSERT_TRUE(result.primitives.find("float") != result.primitives.end());
-  EXPECT_EQ(4, result.primitives["float"]->size);
-  EXPECT_EQ(4, result.primitives["float"]->alignment);
-  EXPECT_EQ(importee_filename, result.primitives["float"]->defined_at.filename);
-
-  ASSERT_TRUE(result.primitives.find("int") != result.primitives.end());
-  EXPECT_EQ(4, result.primitives["int"]->size);
-  EXPECT_EQ(4, result.primitives["int"]->alignment);
-  EXPECT_EQ(importee_filename, result.primitives["int"]->defined_at.filename);
-
-  ASSERT_TRUE(result.primitives.find("double") != result.primitives.end());
-  EXPECT_EQ(8, result.primitives["double"]->size);
-  EXPECT_EQ(8, result.primitives["double"]->alignment);
+  ASSERT_TRUE(result.primitives().find("float") != result.primitives().end());
+  EXPECT_EQ(4, result.primitives().at("float")->size);
+  EXPECT_EQ(4, result.primitives().at("float")->alignment);
   EXPECT_EQ(importee_filename,
-            result.primitives["double"]->defined_at.filename);
+            result.primitives().at("float")->defined_at.filename);
 
-  ASSERT_TRUE(result.primitives.find("char") != result.primitives.end());
-  EXPECT_EQ(1, result.primitives["char"]->size);
-  EXPECT_EQ(1, result.primitives["char"]->alignment);
-  EXPECT_EQ(importee_filename, result.primitives["char"]->defined_at.filename);
+  ASSERT_TRUE(result.primitives().find("int") != result.primitives().end());
+  EXPECT_EQ(4, result.primitives().at("int")->size);
+  EXPECT_EQ(4, result.primitives().at("int")->alignment);
+  EXPECT_EQ(importee_filename,
+            result.primitives().at("int")->defined_at.filename);
 
-  ASSERT_EQ(3, result.structs.size());
+  ASSERT_TRUE(result.primitives().find("double") != result.primitives().end());
+  EXPECT_EQ(8, result.primitives().at("double")->size);
+  EXPECT_EQ(8, result.primitives().at("double")->alignment);
+  EXPECT_EQ(importee_filename,
+            result.primitives().at("double")->defined_at.filename);
 
-  ASSERT_TRUE(result.structs.find("Foo") != result.structs.end());
-  ASSERT_EQ(3, result.structs["Foo"]->fields.size());
-  EXPECT_EQ(importer_filename, result.structs["Foo"]->defined_at.filename);
-  EXPECT_EQ(3, result.structs["Foo"]->defined_at.line_number);
-  EXPECT_EQ(8, result.structs["Foo"]->defined_at.column_number);
+  ASSERT_TRUE(result.primitives().find("char") != result.primitives().end());
+  EXPECT_EQ(1, result.primitives().at("char")->size);
+  EXPECT_EQ(1, result.primitives().at("char")->alignment);
+  EXPECT_EQ(importee_filename,
+            result.primitives().at("char")->defined_at.filename);
 
-  ASSERT_TRUE(result.structs.find("Bar") != result.structs.end());
-  ASSERT_EQ(3, result.structs["Bar"]->fields.size());
-  EXPECT_EQ(importer_filename, result.structs["Bar"]->defined_at.filename);
-  EXPECT_EQ(9, result.structs["Bar"]->defined_at.line_number);
-  EXPECT_EQ(8, result.structs["Bar"]->defined_at.column_number);
+  ASSERT_EQ(3, result.structs().size());
 
-  ASSERT_TRUE(result.structs.find("Rey") != result.structs.end());
-  ASSERT_EQ(4, result.structs["Rey"]->fields.size());
+  ASSERT_TRUE(result.structs().find("Foo") != result.structs().end());
+  ASSERT_EQ(3, result.structs().at("Foo")->fields.size());
+  EXPECT_EQ(importer_filename, result.structs().at("Foo")->defined_at.filename);
+  EXPECT_EQ(3, result.structs().at("Foo")->defined_at.line_number);
+  EXPECT_EQ(8, result.structs().at("Foo")->defined_at.column_number);
+
+  ASSERT_TRUE(result.structs().find("Bar") != result.structs().end());
+  ASSERT_EQ(3, result.structs().at("Bar")->fields.size());
+  EXPECT_EQ(importer_filename, result.structs().at("Bar")->defined_at.filename);
+  EXPECT_EQ(9, result.structs().at("Bar")->defined_at.line_number);
+  EXPECT_EQ(8, result.structs().at("Bar")->defined_at.column_number);
+
+  ASSERT_TRUE(result.structs().find("Rey") != result.structs().end());
+  ASSERT_EQ(4, result.structs().at("Rey")->fields.size());
   EXPECT_EQ(other_importer_filename,
-            result.structs["Rey"]->defined_at.filename);
-  EXPECT_EQ(3, result.structs["Rey"]->defined_at.line_number);
-  EXPECT_EQ(8, result.structs["Rey"]->defined_at.column_number);
+            result.structs().at("Rey")->defined_at.filename);
+  EXPECT_EQ(3, result.structs().at("Rey")->defined_at.line_number);
+  EXPECT_EQ(8, result.structs().at("Rey")->defined_at.column_number);
 }
 
 TEST(ParseFileTest, ImporteeHasAccessToPreambleTest) {
@@ -187,32 +193,34 @@ TEST(ParseFileTest, ImporteeHasAccessToPreambleTest) {
   ASSERT_FALSE(std::holds_alternative<ParseErrorWithLocation>(result_or_error));
   auto& result = std::get<ParseResults>(result_or_error);
 
-  // The preamble primitives.
-  ASSERT_EQ(4, result.primitives.size());
+  // The preamble primitives().
+  ASSERT_EQ(4, result.primitives().size());
 
-  ASSERT_EQ(2, result.structs.size());
+  ASSERT_EQ(2, result.structs().size());
 
-  ASSERT_TRUE(result.structs.find("ImporteeStruct") != result.structs.end());
-  ASSERT_EQ(2, result.structs["ImporteeStruct"]->fields.size());
+  ASSERT_TRUE(result.structs().find("ImporteeStruct") !=
+              result.structs().end());
+  ASSERT_EQ(2, result.structs().at("ImporteeStruct")->fields.size());
   EXPECT_EQ(importee_filename,
-            result.structs["ImporteeStruct"]->defined_at.filename);
-  EXPECT_EQ(1, result.structs["ImporteeStruct"]->defined_at.line_number);
-  EXPECT_EQ(8, result.structs["ImporteeStruct"]->defined_at.column_number);
+            result.structs().at("ImporteeStruct")->defined_at.filename);
+  EXPECT_EQ(1, result.structs().at("ImporteeStruct")->defined_at.line_number);
+  EXPECT_EQ(8, result.structs().at("ImporteeStruct")->defined_at.column_number);
 
-  const Primitive* importee_field_primitive_type =
-      AsPrimitive(result.structs["ImporteeStruct"]->fields[0].type.base_type);
+  const Primitive* importee_field_primitive_type = AsPrimitive(
+      result.structs().at("ImporteeStruct")->fields[0].type.base_type);
   ASSERT_TRUE(importee_field_primitive_type);
   EXPECT_EQ("float", importee_field_primitive_type->name);
 
-  ASSERT_TRUE(result.structs.find("ImporterStruct") != result.structs.end());
-  ASSERT_EQ(2, result.structs["ImporterStruct"]->fields.size());
+  ASSERT_TRUE(result.structs().find("ImporterStruct") !=
+              result.structs().end());
+  ASSERT_EQ(2, result.structs().at("ImporterStruct")->fields.size());
   EXPECT_EQ(importer_filename,
-            result.structs["ImporterStruct"]->defined_at.filename);
-  EXPECT_EQ(8, result.structs["ImporterStruct"]->defined_at.line_number);
-  EXPECT_EQ(8, result.structs["ImporterStruct"]->defined_at.column_number);
+            result.structs().at("ImporterStruct")->defined_at.filename);
+  EXPECT_EQ(8, result.structs().at("ImporterStruct")->defined_at.line_number);
+  EXPECT_EQ(8, result.structs().at("ImporterStruct")->defined_at.column_number);
 
-  const Primitive* importer_field_primitive_type =
-      AsPrimitive(result.structs["ImporterStruct"]->fields[0].type.base_type);
+  const Primitive* importer_field_primitive_type = AsPrimitive(
+      result.structs().at("ImporterStruct")->fields[0].type.base_type);
   ASSERT_TRUE(importer_field_primitive_type);
   EXPECT_EQ("float", importer_field_primitive_type->name);
 

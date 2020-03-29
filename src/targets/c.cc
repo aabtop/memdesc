@@ -15,8 +15,12 @@ std::optional<TargetError> OutputC(const ParseResults& parse_results,
   out << "#endif" << std::endl;
   out << std::endl;
 
-  for (const auto& item : parse_results.structs) {
-    const auto& parsed_struct = *item.second;
+  for (const auto& item : parse_results.declaration_order()) {
+    const Struct* as_struct = AsStruct(item);
+    if (as_struct == nullptr) {
+      continue;
+    }
+    const Struct& parsed_struct = *as_struct;
 
     out << "typedef struct {" << std::endl;
     for (const auto& field : parsed_struct.fields) {

@@ -11,12 +11,8 @@
 #include "ast.h"
 #include "parse_error.h"
 
-struct ParseResults {
-  std::unordered_map<std::string, std::unique_ptr<Primitive>>
-      primitives;  // NOLINT(misc-non-private-member-variables-in-classes)
-  std::unordered_map<std::string, std::unique_ptr<Struct>>
-      structs;  // NOLINT(misc-non-private-member-variables-in-classes)
-
+class ParseResults {
+ public:
   ParseResults() = default;
   ParseResults(const ParseResults& rhs);
   ParseResults& operator=(ParseResults&& rhs) = default;
@@ -26,6 +22,28 @@ struct ParseResults {
   }
 
   std::optional<ParseErrorWithLocation> Merge(ParseResults&& src);
+
+  void AddPrimitive(std::unique_ptr<Primitive> primitive);
+  void AddStruct(std::unique_ptr<Struct> s);
+
+  const std::unordered_map<std::string, std::unique_ptr<Primitive>>&
+  primitives() const {
+    return primitives_;
+  }
+  const std::unordered_map<std::string, std::unique_ptr<Struct>>& structs()
+      const {
+    return structs_;
+  }
+
+  const std::vector<BaseType>& declaration_order() const {
+    return declaration_order_;
+  }
+
+ private:
+  std::unordered_map<std::string, std::unique_ptr<Primitive>> primitives_;
+  std::unordered_map<std::string, std::unique_ptr<Struct>> structs_;
+
+  std::vector<BaseType> declaration_order_;
 };
 
 std::string ToString(const ParseResults& parse_results);

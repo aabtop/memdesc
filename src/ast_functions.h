@@ -23,8 +23,11 @@ inline const std::string& TypeName(const Type& type) {
 const SourceLocation& DefinedAt(const BaseType& base_type);
 
 // Helper function to quickly get access to the underlying type of a BaseType.
+Primitive* AsPrimitive(
+    BaseType& base_type);  // NOLINT(google-runtime-references)
 const Primitive* AsPrimitive(const BaseType& base_type);
 // Helper function to quickly get access to the underlying type of a BaseType.
+Struct* AsStruct(BaseType& base_type);  // NOLINT(google-runtime-references)
 const Struct* AsStruct(const BaseType& base_type);
 
 inline bool operator==(const SourceLocation& a, const SourceLocation& b) {

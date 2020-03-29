@@ -91,12 +91,12 @@ memdesc_declaration:
     import_statement {}
   | struct_declaration {
 			if ($1 != nullptr) {
-				parse_context->results.structs[$1->name] = std::unique_ptr<Struct>($1);
+				parse_context->results.AddStruct(std::unique_ptr<Struct>($1));
 			}
     }
   | primitive_declaration {
 			if ($1 != nullptr) {
-				parse_context->results.primitives[$1->name] = std::unique_ptr<Primitive>($1);
+				parse_context->results.AddPrimitive(std::unique_ptr<Primitive>($1));
 			}
     }
 ;

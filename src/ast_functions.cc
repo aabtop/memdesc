@@ -75,9 +75,23 @@ const SourceLocation& DefinedAt(const BaseType& base_type) {
       base_type);
 }
 
+Primitive* AsPrimitive(BaseType& base_type) {
+  if (std::holds_alternative<Primitive*>(base_type)) {
+    return std::get<Primitive*>(base_type);
+  }
+  return nullptr;
+}
+
 const Primitive* AsPrimitive(const BaseType& base_type) {
   if (std::holds_alternative<Primitive*>(base_type)) {
     return std::get<Primitive*>(base_type);
+  }
+  return nullptr;
+}
+
+Struct* AsStruct(BaseType& base_type) {
+  if (std::holds_alternative<Struct*>(base_type)) {
+    return std::get<Struct*>(base_type);
   }
   return nullptr;
 }

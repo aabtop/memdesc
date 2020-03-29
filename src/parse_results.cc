@@ -16,21 +16,17 @@ namespace {
 // type may change, and this function is responsible for remapping type
 // references from one pointer source to another.
 void RemapStructTypePointers(
-    const std::unordered_map<Primitive*, Primitive*>& primitive_remapping,
-    const std::unordered_map<Struct*, Struct*>& struct_remapping,
-    const std::vector<Struct*>& structs_to_remap) {
-  for (auto& to_remap : structs_to_remap) {
-    for (auto& f : to_remap->fields) {
-      if (std::holds_alternative<Primitive*>(f.type.base_type)) {
-        f.type.base_type =
-            primitive_remapping.find(std::get<Primitive*>(f.type.base_type))
-                ->second;
-      } else if (std::holds_alternative<Struct*>(f.type.base_type)) {
-        f.type.base_type =
-            struct_remapping.find(std::get<Struct*>(f.type.base_type))->second;
-      } else {
-        assert(false);
-      }
+    const std::unordered_map<BaseType, BaseType>& remapping,
+    std::vector<BaseType>::iterator begin,
+    std::vector<BaseType>::iterator end) {
+  for (auto iter = begin; iter != end; ++iter) {
+    auto as_struct = AsStruct(*iter);
+    if (as_struct == nullptr) {
+      continue;
+    }
+
+    for (auto& f : as_struct->fields) {
+      f.type.base_type = remapping.find(f.type.base_type)->second;
     }
   }
 }
@@ -39,104 +35,96 @@ void RemapStructTypePointers(
 ParseResults::ParseResults(const ParseResults& rhs) {
   // First copy the primitives and structs from |rhs| to the new ParseResults,
   // keeping track of the source and destination pointers as we go.
-  std::unordered_map<Primitive*, Primitive*> primitive_remapping;
-  std::unordered_map<Struct*, Struct*> struct_remapping;
+  std::unordered_map<BaseType, BaseType> remapping;
 
-  for (const auto& item : rhs.primitives) {
-    auto copied_item = std::make_unique<Primitive>(*item.second);
-    primitive_remapping[item.second.get()] = copied_item.get();
-    primitives.insert({item.first, std::move(copied_item)});
-  }
-  for (const auto& item : rhs.structs) {
-    auto copied_item = std::make_unique<Struct>(*item.second);
-    struct_remapping[item.second.get()] = copied_item.get();
-    structs.insert({item.first, std::move(copied_item)});
+  for (const auto& item : rhs.declaration_order_) {
+    if (const Primitive* as_primitive = AsPrimitive(item)) {
+      auto copied_primitive = std::make_unique<Primitive>(*as_primitive);
+      declaration_order_.push_back(copied_primitive.get());
+      primitives_.insert({BaseTypeName(item), std::move(copied_primitive)});
+    } else if (const Struct* as_struct = AsStruct(item)) {
+      auto copied_struct = std::make_unique<Struct>(*as_struct);
+      declaration_order_.push_back(copied_struct.get());
+      structs_.insert({BaseTypeName(item), std::move(copied_struct)});
+    }
+    remapping[item] = declaration_order_.back();
   }
 
   // Now traverse through the copied AST and fix-up pointers to point to the
   // copied Structs.
-  std::vector<Struct*> all_structs;
-  std::transform(structs.begin(), structs.end(),
-                 std::back_inserter(all_structs),
-                 [](const auto& item) { return item.second.get(); });
-  RemapStructTypePointers(primitive_remapping, struct_remapping, all_structs);
+  RemapStructTypePointers(remapping, declaration_order_.begin(),
+                          declaration_order_.end());
 }
 
-namespace {
-template <typename T>
-struct MergeListResults {
-  std::unordered_map<T*, T*> remappings;
+std::optional<ParseErrorWithLocation> ParseResults::Merge(ParseResults&& src) {
+  std::unordered_map<BaseType, BaseType> remappings;
 
-  // The list of items that are newly merged over, as opposed to items that
-  // did not get merged because a definition of the item already existed in
-  // the merge destination.
-  std::vector<T*> merged;
-};
+  size_t original_num_declarations = declaration_order_.size();
 
-template <typename T>
-std::variant<MergeListResults<T>, ParseErrorWithLocation> MergeParseResultList(
-    std::unordered_map<std::string, std::unique_ptr<T>>&& src_list,
-    std::unordered_map<std::string, std::unique_ptr<T>>* dest_list) {
-  size_t src_list_size = src_list.size();
+  for (auto& merge_type : src.declaration_order_) {
+    const std::string& merge_type_name = BaseTypeName(merge_type);
 
-  MergeListResults<T> results;
-  for (auto&& item : src_list) {
-    auto found = dest_list->find(item.first);
-    if (found != dest_list->end()) {
-      if (found->second->defined_at == item.second->defined_at) {
+    if (auto existing_type = LookupBaseType(*this, merge_type_name)) {
+      if (DefinedAt(*existing_type) == DefinedAt(merge_type)) {
         // If we found a pre-existing definition defined in the same place,
         // record the new location.
-        results.remappings[item.second.get()] = found->second.get();
+        remappings[merge_type] = *existing_type;
       } else {
         // We seem to have found two separate definitions across a merge,
         // return an error.
         return ParseErrorWithLocation{
-            RedefinitionError{item.first, found->second->defined_at},
-            item.second->defined_at};
+            RedefinitionError{merge_type_name, DefinedAt(*existing_type)},
+            DefinedAt(merge_type)};
       }
     } else {
       // No collisions, we're now safe to copy the definition over.
-      results.remappings[item.second.get()] = item.second.get();
-      results.merged.push_back(item.second.get());
-      (*dest_list)[item.first] = std::move(item.second);
+      remappings[merge_type] = merge_type;
+      declaration_order_.push_back(merge_type);
+      if (Primitive* as_primitive = AsPrimitive(merge_type)) {
+        primitives_.insert(std::move(*src.primitives_.find(merge_type_name)));
+      } else if (Struct* as_struct = AsStruct(merge_type)) {
+        structs_.insert(std::move(*src.structs_.find(merge_type_name)));
+      } else {
+        assert(false);
+      }
     }
   }
 
-  assert(results.remappings.size() == src_list_size);
-  return results;
-}
-}  // namespace
-
-std::optional<ParseErrorWithLocation> ParseResults::Merge(ParseResults&& src) {
-  auto primitive_merge_results =
-      MergeParseResultList(std::move(src.primitives), &primitives);
-  if (std::holds_alternative<ParseErrorWithLocation>(primitive_merge_results)) {
-    return std::move(std::get<ParseErrorWithLocation>(primitive_merge_results));
-  }
-
-  auto struct_merge_results =
-      MergeParseResultList(std::move(src.structs), &structs);
-  if (std::holds_alternative<ParseErrorWithLocation>(struct_merge_results)) {
-    return std::move(std::get<ParseErrorWithLocation>(struct_merge_results));
-  }
-
   RemapStructTypePointers(
-      std::get<MergeListResults<Primitive>>(primitive_merge_results).remappings,
-      std::get<MergeListResults<Struct>>(struct_merge_results).remappings,
-      std::get<MergeListResults<Struct>>(struct_merge_results).merged);
+      remappings, declaration_order_.begin() + original_num_declarations,
+      declaration_order_.end());
+
   return std::nullopt;
+}
+
+void ParseResults::AddPrimitive(std::unique_ptr<Primitive> primitive) {
+  auto found = primitives_.find(primitive->name);
+  assert(found == primitives_.end());
+
+  Primitive* as_ptr = primitive.get();
+  declaration_order_.push_back(as_ptr);
+  primitives_[as_ptr->name] = std::move(primitive);
+}
+
+void ParseResults::AddStruct(std::unique_ptr<Struct> s) {
+  auto found = structs_.find(s->name);
+  assert(found == structs_.end());
+
+  Struct* as_ptr = s.get();
+  declaration_order_.push_back(as_ptr);
+  structs_[as_ptr->name] = std::move(s);
 }
 
 std::string ToString(const ParseResults& parse_results) {
   std::ostringstream oss;
 
   oss << "Primitives:" << std::endl;
-  for (const auto& type : parse_results.primitives) {
+  for (const auto& type : parse_results.primitives()) {
     oss << "  " << ToString(*type.second) << std::endl;
   }
   oss << std::endl;
   oss << "Structs:" << std::endl;
-  for (const auto& type : parse_results.structs) {
+  for (const auto& type : parse_results.structs()) {
     oss << "  " << ToString(*type.second) << std::endl;
   }
   oss << std::endl;
@@ -146,13 +134,13 @@ std::string ToString(const ParseResults& parse_results) {
 
 std::optional<BaseType> LookupBaseType(const ParseResults& parse_results,
                                        const std::string& name) {
-  auto found_primitive = parse_results.primitives.find(name);
-  if (found_primitive != parse_results.primitives.end()) {
+  auto found_primitive = parse_results.primitives().find(name);
+  if (found_primitive != parse_results.primitives().end()) {
     return BaseType(found_primitive->second.get());
   }
 
-  auto found_struct = parse_results.structs.find(name);
-  if (found_struct != parse_results.structs.end()) {
+  auto found_struct = parse_results.structs().find(name);
+  if (found_struct != parse_results.structs().end()) {
     return BaseType(found_struct->second.get());
   }
 

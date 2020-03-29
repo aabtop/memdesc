@@ -11,6 +11,6 @@ struct Yard {
 
 struct Street {
   Yard yards[10];
-  char name[100];
+  char name[99];
   float angle;
 };

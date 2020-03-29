@@ -14,9 +14,9 @@ TEST(AstTest, SingleStructNoFields) {
   ASSERT_FALSE(std::holds_alternative<ParseErrorWithLocation>(result_or_error));
   auto& result = std::get<ParseResults>(result_or_error);
 
-  ASSERT_EQ(1, result.structs.size());
-  ASSERT_TRUE(result.structs.find("Foo") != result.structs.end());
-  EXPECT_TRUE(result.structs["Foo"]->fields.empty());
+  ASSERT_EQ(1, result.structs().size());
+  ASSERT_TRUE(result.structs().find("Foo") != result.structs().end());
+  EXPECT_TRUE(result.structs().at("Foo")->fields.empty());
 }
 
 TEST(AstTest, SinglePrimitiveDefTest) {
@@ -25,11 +25,11 @@ TEST(AstTest, SinglePrimitiveDefTest) {
   ASSERT_FALSE(std::holds_alternative<ParseErrorWithLocation>(result_or_error));
   auto& result = std::get<ParseResults>(result_or_error);
 
-  ASSERT_EQ(1, result.primitives.size());
-  ASSERT_TRUE(result.primitives.find("Foo") != result.primitives.end());
-  EXPECT_EQ("Foo", result.primitives["Foo"]->name);
-  EXPECT_EQ(4, result.primitives["Foo"]->size);
-  EXPECT_EQ(8, result.primitives["Foo"]->alignment);
+  ASSERT_EQ(1, result.primitives().size());
+  ASSERT_TRUE(result.primitives().find("Foo") != result.primitives().end());
+  EXPECT_EQ("Foo", result.primitives().at("Foo")->name);
+  EXPECT_EQ(4, result.primitives().at("Foo")->size);
+  EXPECT_EQ(8, result.primitives().at("Foo")->alignment);
 }
 
 TEST(AstTest, MultiplePrimitiveDefTest) {
@@ -40,21 +40,21 @@ TEST(AstTest, MultiplePrimitiveDefTest) {
   ASSERT_FALSE(std::holds_alternative<ParseErrorWithLocation>(result_or_error));
   auto& result = std::get<ParseResults>(result_or_error);
 
-  ASSERT_EQ(2, result.primitives.size());
+  ASSERT_EQ(2, result.primitives().size());
 
-  ASSERT_TRUE(result.primitives.find("Foo") != result.primitives.end());
-  EXPECT_EQ("Foo", result.primitives["Foo"]->name);
-  EXPECT_EQ(4, result.primitives["Foo"]->size);
-  EXPECT_EQ(8, result.primitives["Foo"]->alignment);
-  EXPECT_EQ(1, result.primitives["Foo"]->defined_at.line_number);
-  EXPECT_EQ(11, result.primitives["Foo"]->defined_at.column_number);
+  ASSERT_TRUE(result.primitives().find("Foo") != result.primitives().end());
+  EXPECT_EQ("Foo", result.primitives().at("Foo")->name);
+  EXPECT_EQ(4, result.primitives().at("Foo")->size);
+  EXPECT_EQ(8, result.primitives().at("Foo")->alignment);
+  EXPECT_EQ(1, result.primitives().at("Foo")->defined_at.line_number);
+  EXPECT_EQ(11, result.primitives().at("Foo")->defined_at.column_number);
 
-  ASSERT_TRUE(result.primitives.find("Bar") != result.primitives.end());
-  EXPECT_EQ("Bar", result.primitives["Bar"]->name);
-  EXPECT_EQ(1, result.primitives["Bar"]->size);
-  EXPECT_EQ(1, result.primitives["Bar"]->alignment);
-  EXPECT_EQ(2, result.primitives["Bar"]->defined_at.line_number);
-  EXPECT_EQ(11, result.primitives["Bar"]->defined_at.column_number);
+  ASSERT_TRUE(result.primitives().find("Bar") != result.primitives().end());
+  EXPECT_EQ("Bar", result.primitives().at("Bar")->name);
+  EXPECT_EQ(1, result.primitives().at("Bar")->size);
+  EXPECT_EQ(1, result.primitives().at("Bar")->alignment);
+  EXPECT_EQ(2, result.primitives().at("Bar")->defined_at.line_number);
+  EXPECT_EQ(11, result.primitives().at("Bar")->defined_at.column_number);
 }
 
 TEST(AstTest, SingleStructSingleField) {
@@ -66,14 +66,14 @@ TEST(AstTest, SingleStructSingleField) {
   ASSERT_FALSE(std::holds_alternative<ParseErrorWithLocation>(result_or_error));
   auto& result = std::get<ParseResults>(result_or_error);
 
-  ASSERT_EQ(1, result.structs.size());
-  ASSERT_TRUE(result.structs.find("Foo") != result.structs.end());
-  ASSERT_EQ(1, result.structs["Foo"]->fields.size());
-  Primitive* bar_type =
-      std::get<Primitive*>(result.structs["Foo"]->fields[0].type.base_type);
+  ASSERT_EQ(1, result.structs().size());
+  ASSERT_TRUE(result.structs().find("Foo") != result.structs().end());
+  ASSERT_EQ(1, result.structs().at("Foo")->fields.size());
+  Primitive* bar_type = std::get<Primitive*>(
+      result.structs().at("Foo")->fields[0].type.base_type);
   EXPECT_EQ("float", bar_type->name);
-  EXPECT_EQ("bar", result.structs["Foo"]->fields[0].name);
-  EXPECT_FALSE(result.structs["Foo"]->fields[0].type.array_count);
+  EXPECT_EQ("bar", result.structs().at("Foo")->fields[0].name);
+  EXPECT_FALSE(result.structs().at("Foo")->fields[0].type.array_count);
 }
 
 TEST(AstTest, SingleLineComments) {
@@ -88,14 +88,14 @@ TEST(AstTest, SingleLineComments) {
   ASSERT_FALSE(std::holds_alternative<ParseErrorWithLocation>(result_or_error));
   auto& result = std::get<ParseResults>(result_or_error);
 
-  ASSERT_EQ(1, result.structs.size());
-  ASSERT_TRUE(result.structs.find("Foo") != result.structs.end());
-  ASSERT_EQ(1, result.structs["Foo"]->fields.size());
-  Primitive* bar_type =
-      std::get<Primitive*>(result.structs["Foo"]->fields[0].type.base_type);
+  ASSERT_EQ(1, result.structs().size());
+  ASSERT_TRUE(result.structs().find("Foo") != result.structs().end());
+  ASSERT_EQ(1, result.structs().at("Foo")->fields.size());
+  Primitive* bar_type = std::get<Primitive*>(
+      result.structs().at("Foo")->fields[0].type.base_type);
   EXPECT_EQ("float", bar_type->name);
-  EXPECT_EQ("bar", result.structs["Foo"]->fields[0].name);
-  EXPECT_FALSE(result.structs["Foo"]->fields[0].type.array_count);
+  EXPECT_EQ("bar", result.structs().at("Foo")->fields[0].name);
+  EXPECT_FALSE(result.structs().at("Foo")->fields[0].type.array_count);
 }
 
 TEST(AstTest, MultiLineComments) {
@@ -115,14 +115,14 @@ TEST(AstTest, MultiLineComments) {
   ASSERT_FALSE(std::holds_alternative<ParseErrorWithLocation>(result_or_error));
   auto& result = std::get<ParseResults>(result_or_error);
 
-  ASSERT_EQ(1, result.structs.size());
-  ASSERT_TRUE(result.structs.find("Foo") != result.structs.end());
-  ASSERT_EQ(1, result.structs["Foo"]->fields.size());
-  Primitive* bar_type =
-      std::get<Primitive*>(result.structs["Foo"]->fields[0].type.base_type);
+  ASSERT_EQ(1, result.structs().size());
+  ASSERT_TRUE(result.structs().find("Foo") != result.structs().end());
+  ASSERT_EQ(1, result.structs().at("Foo")->fields.size());
+  Primitive* bar_type = std::get<Primitive*>(
+      result.structs().at("Foo")->fields[0].type.base_type);
   EXPECT_EQ("float", bar_type->name);
-  EXPECT_EQ("bar", result.structs["Foo"]->fields[0].name);
-  EXPECT_FALSE(result.structs["Foo"]->fields[0].type.array_count);
+  EXPECT_EQ("bar", result.structs().at("Foo")->fields[0].name);
+  EXPECT_FALSE(result.structs().at("Foo")->fields[0].type.array_count);
 }
 
 TEST(AstTest, SingleStructMultiField) {
@@ -136,26 +136,26 @@ TEST(AstTest, SingleStructMultiField) {
   ASSERT_FALSE(std::holds_alternative<ParseErrorWithLocation>(result_or_error));
   auto& result = std::get<ParseResults>(result_or_error);
 
-  ASSERT_EQ(1, result.structs.size());
-  ASSERT_TRUE(result.structs.find("Foo") != result.structs.end());
-  ASSERT_EQ(3, result.structs["Foo"]->fields.size());
-  Primitive* bar_type =
-      std::get<Primitive*>(result.structs["Foo"]->fields[0].type.base_type);
+  ASSERT_EQ(1, result.structs().size());
+  ASSERT_TRUE(result.structs().find("Foo") != result.structs().end());
+  ASSERT_EQ(3, result.structs().at("Foo")->fields.size());
+  Primitive* bar_type = std::get<Primitive*>(
+      result.structs().at("Foo")->fields[0].type.base_type);
   EXPECT_EQ("float", bar_type->name);
-  EXPECT_EQ("bar", result.structs["Foo"]->fields[0].name);
-  EXPECT_FALSE(result.structs["Foo"]->fields[0].type.array_count);
+  EXPECT_EQ("bar", result.structs().at("Foo")->fields[0].name);
+  EXPECT_FALSE(result.structs().at("Foo")->fields[0].type.array_count);
 
-  Primitive* bar2_type =
-      std::get<Primitive*>(result.structs["Foo"]->fields[1].type.base_type);
+  Primitive* bar2_type = std::get<Primitive*>(
+      result.structs().at("Foo")->fields[1].type.base_type);
   EXPECT_EQ("int32_t", bar2_type->name);
-  EXPECT_EQ("bar2", result.structs["Foo"]->fields[1].name);
-  EXPECT_FALSE(result.structs["Foo"]->fields[1].type.array_count);
+  EXPECT_EQ("bar2", result.structs().at("Foo")->fields[1].name);
+  EXPECT_FALSE(result.structs().at("Foo")->fields[1].type.array_count);
 
-  Primitive* bar3_type =
-      std::get<Primitive*>(result.structs["Foo"]->fields[2].type.base_type);
+  Primitive* bar3_type = std::get<Primitive*>(
+      result.structs().at("Foo")->fields[2].type.base_type);
   EXPECT_EQ("double", bar3_type->name);
-  EXPECT_EQ("bar3", result.structs["Foo"]->fields[2].name);
-  EXPECT_FALSE(result.structs["Foo"]->fields[2].type.array_count);
+  EXPECT_EQ("bar3", result.structs().at("Foo")->fields[2].name);
+  EXPECT_FALSE(result.structs().at("Foo")->fields[2].type.array_count);
 }
 
 TEST(AstTest, SingleStructMultiFieldWithCount) {
@@ -169,27 +169,27 @@ TEST(AstTest, SingleStructMultiFieldWithCount) {
   ASSERT_FALSE(std::holds_alternative<ParseErrorWithLocation>(result_or_error));
   auto& result = std::get<ParseResults>(result_or_error);
 
-  ASSERT_EQ(1, result.structs.size());
-  ASSERT_TRUE(result.structs.find("Foo") != result.structs.end());
-  ASSERT_EQ(3, result.structs["Foo"]->fields.size());
-  Primitive* bar_type =
-      std::get<Primitive*>(result.structs["Foo"]->fields[0].type.base_type);
+  ASSERT_EQ(1, result.structs().size());
+  ASSERT_TRUE(result.structs().find("Foo") != result.structs().end());
+  ASSERT_EQ(3, result.structs().at("Foo")->fields.size());
+  Primitive* bar_type = std::get<Primitive*>(
+      result.structs().at("Foo")->fields[0].type.base_type);
   EXPECT_EQ("float", bar_type->name);
-  EXPECT_EQ("bar", result.structs["Foo"]->fields[0].name);
-  EXPECT_FALSE(result.structs["Foo"]->fields[0].type.array_count);
+  EXPECT_EQ("bar", result.structs().at("Foo")->fields[0].name);
+  EXPECT_FALSE(result.structs().at("Foo")->fields[0].type.array_count);
 
-  Primitive* bar2_type =
-      std::get<Primitive*>(result.structs["Foo"]->fields[1].type.base_type);
+  Primitive* bar2_type = std::get<Primitive*>(
+      result.structs().at("Foo")->fields[1].type.base_type);
   EXPECT_EQ("int32_t", bar2_type->name);
-  EXPECT_EQ("bar2", result.structs["Foo"]->fields[1].name);
-  ASSERT_TRUE(result.structs["Foo"]->fields[1].type.array_count);
-  EXPECT_EQ(4, *(result.structs["Foo"]->fields[1].type.array_count));
+  EXPECT_EQ("bar2", result.structs().at("Foo")->fields[1].name);
+  ASSERT_TRUE(result.structs().at("Foo")->fields[1].type.array_count);
+  EXPECT_EQ(4, *(result.structs().at("Foo")->fields[1].type.array_count));
 
-  Primitive* bar3_type =
-      std::get<Primitive*>(result.structs["Foo"]->fields[2].type.base_type);
+  Primitive* bar3_type = std::get<Primitive*>(
+      result.structs().at("Foo")->fields[2].type.base_type);
   EXPECT_EQ("double", bar3_type->name);
-  EXPECT_EQ("bar3", result.structs["Foo"]->fields[2].name);
-  EXPECT_FALSE(result.structs["Foo"]->fields[2].type.array_count);
+  EXPECT_EQ("bar3", result.structs().at("Foo")->fields[2].name);
+  EXPECT_FALSE(result.structs().at("Foo")->fields[2].type.array_count);
 }
 
 TEST(AstTest, MultiStructs) {
@@ -204,23 +204,23 @@ TEST(AstTest, MultiStructs) {
   ASSERT_FALSE(std::holds_alternative<ParseErrorWithLocation>(result_or_error));
   auto& result = std::get<ParseResults>(result_or_error);
 
-  ASSERT_EQ(2, result.structs.size());
+  ASSERT_EQ(2, result.structs().size());
 
-  ASSERT_TRUE(result.structs.find("Foo") != result.structs.end());
-  ASSERT_EQ(1, result.structs["Foo"]->fields.size());
-  Primitive* bar_type =
-      std::get<Primitive*>(result.structs["Foo"]->fields[0].type.base_type);
+  ASSERT_TRUE(result.structs().find("Foo") != result.structs().end());
+  ASSERT_EQ(1, result.structs().at("Foo")->fields.size());
+  Primitive* bar_type = std::get<Primitive*>(
+      result.structs().at("Foo")->fields[0].type.base_type);
   EXPECT_EQ("float", bar_type->name);
-  EXPECT_EQ("bar", result.structs["Foo"]->fields[0].name);
-  EXPECT_FALSE(result.structs["Foo"]->fields[0].type.array_count);
+  EXPECT_EQ("bar", result.structs().at("Foo")->fields[0].name);
+  EXPECT_FALSE(result.structs().at("Foo")->fields[0].type.array_count);
 
-  ASSERT_TRUE(result.structs.find("Bar") != result.structs.end());
-  ASSERT_EQ(1, result.structs["Bar"]->fields.size());
+  ASSERT_TRUE(result.structs().find("Bar") != result.structs().end());
+  ASSERT_EQ(1, result.structs().at("Bar")->fields.size());
   Struct* foo_type =
-      std::get<Struct*>(result.structs["Bar"]->fields[0].type.base_type);
+      std::get<Struct*>(result.structs().at("Bar")->fields[0].type.base_type);
   EXPECT_EQ("Foo", foo_type->name);
-  EXPECT_EQ("foo", result.structs["Bar"]->fields[0].name);
-  EXPECT_FALSE(result.structs["Bar"]->fields[0].type.array_count);
+  EXPECT_EQ("foo", result.structs().at("Bar")->fields[0].name);
+  EXPECT_FALSE(result.structs().at("Bar")->fields[0].type.array_count);
 }
 
 TEST(AstTest, StructDefinitionLocations) {
@@ -233,13 +233,13 @@ TEST(AstTest, StructDefinitionLocations) {
   ASSERT_FALSE(std::holds_alternative<ParseErrorWithLocation>(result_or_error));
   auto& result = std::get<ParseResults>(result_or_error);
 
-  ASSERT_EQ(2, result.structs.size());
-  ASSERT_TRUE(result.structs.find("Foo") != result.structs.end());
-  ASSERT_TRUE(result.structs.find("Bar") != result.structs.end());
-  EXPECT_EQ(1, result.structs["Foo"]->defined_at.line_number);
-  EXPECT_EQ(8, result.structs["Foo"]->defined_at.column_number);
-  EXPECT_EQ(2, result.structs["Bar"]->defined_at.line_number);
-  EXPECT_EQ(8, result.structs["Bar"]->defined_at.column_number);
+  ASSERT_EQ(2, result.structs().size());
+  ASSERT_TRUE(result.structs().find("Foo") != result.structs().end());
+  ASSERT_TRUE(result.structs().find("Bar") != result.structs().end());
+  EXPECT_EQ(1, result.structs().at("Foo")->defined_at.line_number);
+  EXPECT_EQ(8, result.structs().at("Foo")->defined_at.column_number);
+  EXPECT_EQ(2, result.structs().at("Bar")->defined_at.line_number);
+  EXPECT_EQ(8, result.structs().at("Bar")->defined_at.column_number);
 }
 
 TEST(AstTest, ErrorLocationTest) {
