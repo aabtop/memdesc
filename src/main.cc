@@ -40,10 +40,12 @@ int main(int argc, const char** args) {
     preamble_results =
         std::move(std::get<ParseResults>(preamble_results_or_error));
   }
+  ParseResults* preamble_results_as_ptr =
+      (preamble_results ? &(*preamble_results) : nullptr);
 
   // Parse out of a file if a filename is passed.
   auto results_or_error =
-      ParseFromFile(arguments->input_file, std::move(preamble_results));
+      ParseFromFile(arguments->input_file, preamble_results_as_ptr);
 
   if (const auto error =
           std::get_if<ParseErrorWithLocation>(&results_or_error)) {

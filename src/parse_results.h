@@ -12,13 +12,25 @@
 #include "parse_error.h"
 
 struct ParseResults {
-  std::unordered_map<std::string, std::unique_ptr<Primitive>> primitives;
-  std::unordered_map<std::string, std::unique_ptr<Struct>> structs;
+  std::unordered_map<std::string, std::unique_ptr<Primitive>>
+      primitives;  // NOLINT(misc-non-private-member-variables-in-classes)
+  std::unordered_map<std::string, std::unique_ptr<Struct>>
+      structs;  // NOLINT(misc-non-private-member-variables-in-classes)
+
+  ParseResults() = default;
+  ParseResults(const ParseResults& rhs);
+  ParseResults& operator=(ParseResults&& rhs) = default;
+  ParseResults& operator=(const ParseResults& rhs) {
+    *this = ParseResults(rhs);
+    return *this;
+  }
+
+  std::optional<ParseErrorWithLocation> Merge(ParseResults&& src);
 };
 
 std::string ToString(const ParseResults& parse_results);
 
-std::optional<BaseType> LookupBaseType(
-    const ParseResults& parse_results, const std::string& name);
+std::optional<BaseType> LookupBaseType(const ParseResults& parse_results,
+                                       const std::string& name);
 
 #endif  // MEMDESC_PARSE_RESULTS_H_

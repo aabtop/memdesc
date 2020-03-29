@@ -1,0 +1,11 @@
+#import "importee_with_preamble.mdesc"
+
+// Two #imports in a row is perfectly legal, since the definitions will all
+// be coming from the same place, they will just be coalesced into the same
+// thing and this will be a no-op.
+#import "importee_with_preamble.mdesc"
+
+struct ImporterStruct {
+  float a;
+  ImporteeStruct b;
+};

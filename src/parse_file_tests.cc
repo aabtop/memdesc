@@ -168,3 +168,54 @@ TEST(ParseFileTest, ParseFileWithDiamondImportStructure) {
   EXPECT_EQ(3, result.structs["Rey"]->defined_at.line_number);
   EXPECT_EQ(8, result.structs["Rey"]->defined_at.column_number);
 }
+
+TEST(ParseFileTest, ImporteeHasAccessToPreambleTest) {
+  // Make sure that an importee also has access to the preamble.
+  const fs::path preamble_filename(
+      AbsoluteCanonicalPath("examples/importee.mdesc"));
+  const fs::path importer_filename(
+      AbsoluteCanonicalPath("examples/importer_with_preamble.mdesc"));
+  const fs::path importee_filename(
+      AbsoluteCanonicalPath("examples/importee_with_preamble.mdesc"));
+  auto preamble_result_or_error = ParseFromFile(preamble_filename);
+  ASSERT_FALSE(
+      std::holds_alternative<ParseErrorWithLocation>(preamble_result_or_error));
+  auto& preamble_result = std::get<ParseResults>(preamble_result_or_error);
+
+  auto result_or_error = ParseFromFile(importer_filename, &preamble_result);
+
+  ASSERT_FALSE(std::holds_alternative<ParseErrorWithLocation>(result_or_error));
+  auto& result = std::get<ParseResults>(result_or_error);
+
+  // The preamble primitives.
+  ASSERT_EQ(4, result.primitives.size());
+
+  ASSERT_EQ(2, result.structs.size());
+
+  ASSERT_TRUE(result.structs.find("ImporteeStruct") != result.structs.end());
+  ASSERT_EQ(2, result.structs["ImporteeStruct"]->fields.size());
+  EXPECT_EQ(importee_filename,
+            result.structs["ImporteeStruct"]->defined_at.filename);
+  EXPECT_EQ(1, result.structs["ImporteeStruct"]->defined_at.line_number);
+  EXPECT_EQ(8, result.structs["ImporteeStruct"]->defined_at.column_number);
+
+  const Primitive* importee_field_primitive_type =
+      AsPrimitive(result.structs["ImporteeStruct"]->fields[0].type.base_type);
+  ASSERT_TRUE(importee_field_primitive_type);
+  EXPECT_EQ("float", importee_field_primitive_type->name);
+
+  ASSERT_TRUE(result.structs.find("ImporterStruct") != result.structs.end());
+  ASSERT_EQ(2, result.structs["ImporterStruct"]->fields.size());
+  EXPECT_EQ(importer_filename,
+            result.structs["ImporterStruct"]->defined_at.filename);
+  EXPECT_EQ(8, result.structs["ImporterStruct"]->defined_at.line_number);
+  EXPECT_EQ(8, result.structs["ImporterStruct"]->defined_at.column_number);
+
+  const Primitive* importer_field_primitive_type =
+      AsPrimitive(result.structs["ImporterStruct"]->fields[0].type.base_type);
+  ASSERT_TRUE(importer_field_primitive_type);
+  EXPECT_EQ("float", importer_field_primitive_type->name);
+
+  // The type pointers should all point to the same thing.
+  EXPECT_EQ(importee_field_primitive_type, importer_field_primitive_type);
+}

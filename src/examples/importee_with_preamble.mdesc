@@ -1,0 +1,4 @@
+struct ImporteeStruct {
+  float a;
+  char b;
+};

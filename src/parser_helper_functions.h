@@ -9,6 +9,7 @@
 
 struct ParseContext {
   const std::optional<std::filesystem::path> filename;
+  const ParseResults* initial_context;
 
   ParseResults results;
 
