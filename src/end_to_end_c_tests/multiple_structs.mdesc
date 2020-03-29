@@ -1,0 +1,16 @@
+#import "multiple_structs_a.mdesc"
+#import "multiple_structs_b.mdesc"
+
+struct Yard {
+  Ant ants[20];
+  Barn barn;
+
+  float yard_width;
+  float yard_length;
+};
+
+struct Street {
+  Yard yards[10];
+  char name[100];
+  float angle;
+};

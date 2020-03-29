@@ -219,3 +219,37 @@ TEST(ParseFileTest, ImporteeHasAccessToPreambleTest) {
   // The type pointers should all point to the same thing.
   EXPECT_EQ(importee_field_primitive_type, importer_field_primitive_type);
 }
+
+TEST(ParseFileTest, ImportErrorsRegisteredTest) {
+  const fs::path filename(
+      AbsoluteCanonicalPath("examples/importer_with_error.mdesc"));
+  const fs::path importee_filename(
+      AbsoluteCanonicalPath("examples/importee.mdesc"));
+  auto result_or_error = ParseFromFile(filename);
+
+  ASSERT_TRUE(std::holds_alternative<ParseErrorWithLocation>(result_or_error));
+  auto& error = std::get<ParseErrorWithLocation>(result_or_error);
+
+  EXPECT_EQ(filename, error.location.filename);
+  EXPECT_EQ(4, error.location.line_number);
+  EXPECT_EQ(1, error.location.column_number);
+
+  ASSERT_TRUE(std::holds_alternative<ImportError>(error.error));
+  auto& import_error = std::get<ImportError>(error.error);
+
+  EXPECT_EQ(importee_filename, import_error.import_filename);
+
+  EXPECT_EQ(importee_filename, import_error.sub_error->location.filename);
+  EXPECT_EQ(2, import_error.sub_error->location.line_number);
+  EXPECT_EQ(11, import_error.sub_error->location.column_number);
+
+  ASSERT_TRUE(
+      std::holds_alternative<RedefinitionError>(import_error.sub_error->error));
+  const auto& redefinition_error =
+      std::get<RedefinitionError>(import_error.sub_error->error);
+
+  EXPECT_EQ("int", redefinition_error.name);
+  EXPECT_EQ(filename, redefinition_error.original_definition_location.filename);
+  EXPECT_EQ(2, redefinition_error.original_definition_location.line_number);
+  EXPECT_EQ(11, redefinition_error.original_definition_location.column_number);
+}

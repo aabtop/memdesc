@@ -58,8 +58,9 @@ bool ProcessImportStatement(ParseContext* parse_context,
       std::move(std::get<ParseResults>(result_or_error)));
   if (error) {
     parse_context->error = ParseErrorWithLocation{
-        ImportError{filename, std::make_unique<ParseErrorWithLocation>(
-                                  std::move(*error))},
+        ImportError{
+            canonical_import_path,
+            std::make_unique<ParseErrorWithLocation>(std::move(*error))},
         source_location};
     return false;
   }

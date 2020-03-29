@@ -1,0 +1,4 @@
+struct Foo {};
+primitive int(4, 4);
+
+#import "importee.mdesc"

@@ -1,0 +1,7 @@
+#import "multiple_structs_c.mdesc"
+
+struct Ant {
+  char name[100];
+  Color color;
+  int32_t number_of_legs;
+};

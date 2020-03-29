@@ -1,0 +1,10 @@
+#import "multiple_structs_c.mdesc"
+
+struct Barn {
+  Color door_color;
+  Color wall_color;
+  float width;
+  float height;
+  float depth;
+  int32_t num_doors;
+};
