@@ -138,6 +138,16 @@ std::optional<CommandLineArguments> ParseCommandLine(int argc,
       continue;
     }
 
+    if (current_arg == "-d" || current_arg == "--deps_file") {
+      if (++i >= argc) {
+        std::cerr << "Missing parameter for '--deps_file'." << std::endl;
+        return std::nullopt;
+      }
+
+      result.dependency_file = args[i];
+      continue;
+    }
+
     // Handle the positional required arguments.
     if (parsed_input_file) {
       return std::nullopt;
@@ -186,6 +196,14 @@ void PrintUsage() {
             << GetValidTargetStrings() << std::endl;
   std::cerr << "  [(-o | --output_file) OUTPUT_FILE_VALUE]: Optional. If "
                "specified, output will be stored in the file specified. If "
-               "left unspecified, output will be sent to stdout.";
+               "left unspecified, output will be sent to stdout."
+            << std::endl;
+  std::cerr
+      << "  [(-d | --deps_file) DEPS_FILE_VALUE]: Optional. If "
+         "specified, a list of all files that the output file is dependant on "
+         "(e.g. via '#import' statements) will be written to the dependency "
+         "file.  The file's format will be one dependency per line. The "
+         "explicitly specified INPUT FILE is *not* included in this output."
+      << std::endl;
   std::cerr << std::endl;
 }

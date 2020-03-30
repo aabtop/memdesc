@@ -5,6 +5,7 @@
 #include <string>
 
 #include "command_line_arguments.h"
+#include "dependencies_file.h"
 #include "parse_results.h"
 #include "parser_wrapper.h"
 #include "target_registry.h"
@@ -68,18 +69,34 @@ int main(int argc, const char** args) {
     return 1;
   }
 
-  std::ostream* out = &std::cout;
+  // If provided, open the output files and make sure there are no errors.
   std::optional<std::ofstream> possible_output_file;
   if (arguments->output_file) {
-    std::ofstream out_file(arguments->output_file->c_str());
-    if (!out_file) {
+    possible_output_file.emplace(arguments->output_file->c_str());
+    if (!*possible_output_file) {
       std::cerr << "Error opening output file, " << *arguments->output_file
                 << " for writing." << std::endl;
       return 1;
     }
-    out_file << oss.str();
+  }
+  std::optional<std::ofstream> possible_deps_file;
+  if (arguments->dependency_file) {
+    possible_deps_file.emplace(arguments->dependency_file->c_str());
+    if (!*possible_deps_file) {
+      std::cerr << "Error opening dependency file, "
+                << *arguments->dependency_file << " for writing." << std::endl;
+      return 1;
+    }
+  }
+
+  // Finally, write output to the output files.
+  if (possible_output_file) {
+    *possible_output_file << oss.str();
   } else {
     std::cout << oss.str();
+  }
+  if (possible_deps_file) {
+    WriteDependenciesFile(results.dependencies(), *possible_deps_file);
   }
 
   return 0;

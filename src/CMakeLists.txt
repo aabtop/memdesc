@@ -98,6 +98,8 @@ add_library(memdesc_lib
   ast_sizing.h
   command_line_arguments.cc
   command_line_arguments.h
+  dependencies_file.cc
+  dependencies_file.h
   lexer_wrapper.cc
   lexer_wrapper.h
   parse_error.cc

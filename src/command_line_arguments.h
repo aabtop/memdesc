@@ -20,6 +20,7 @@ struct CommandLineArguments {
   PreambleType preamble = PreambleType_Default;
   std::string target;
   std::optional<std::filesystem::path> output_file;
+  std::optional<std::filesystem::path> dependency_file;
 };
 
 std::optional<CommandLineArguments> ParseCommandLine(int argc,
