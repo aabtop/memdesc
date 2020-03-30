@@ -25,6 +25,8 @@ TEST(ParseFileTest, ParseSimpleFile) {
   ASSERT_FALSE(std::holds_alternative<ParseErrorWithLocation>(result_or_error));
   auto& result = std::get<ParseResults>(result_or_error);
 
+  EXPECT_TRUE(result.dependencies().empty());
+
   ASSERT_EQ(4, result.primitives().size());
 
   ASSERT_TRUE(result.primitives().find("float") != result.primitives().end());
@@ -70,6 +72,9 @@ TEST(ParseFileTest, ParseFileWithImport) {
 
   ASSERT_FALSE(std::holds_alternative<ParseErrorWithLocation>(result_or_error));
   auto& result = std::get<ParseResults>(result_or_error);
+
+  EXPECT_EQ(1, result.dependencies().size());
+  EXPECT_EQ(1, result.dependencies().count(importee_filename));
 
   ASSERT_EQ(4, result.primitives().size());
 
@@ -126,6 +131,11 @@ TEST(ParseFileTest, ParseFileWithDiamondImportStructure) {
 
   ASSERT_FALSE(std::holds_alternative<ParseErrorWithLocation>(result_or_error));
   auto& result = std::get<ParseResults>(result_or_error);
+
+  EXPECT_EQ(3, result.dependencies().size());
+  EXPECT_EQ(1, result.dependencies().count(importee_filename));
+  EXPECT_EQ(1, result.dependencies().count(importer_filename));
+  EXPECT_EQ(1, result.dependencies().count(other_importer_filename));
 
   ASSERT_EQ(4, result.primitives().size());
 
@@ -192,6 +202,10 @@ TEST(ParseFileTest, ImporteeHasAccessToPreambleTest) {
 
   ASSERT_FALSE(std::holds_alternative<ParseErrorWithLocation>(result_or_error));
   auto& result = std::get<ParseResults>(result_or_error);
+
+  EXPECT_EQ(2, result.dependencies().size());
+  EXPECT_EQ(1, result.dependencies().count(importee_filename));
+  EXPECT_EQ(1, result.dependencies().count(preamble_filename));
 
   // The preamble primitives().
   ASSERT_EQ(4, result.primitives().size());

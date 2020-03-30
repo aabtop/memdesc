@@ -15,10 +15,10 @@ void yyerror(YYLTYPE* locp, ParseContext* parse_context, void* scanner,
              char const* msg);
 
 ParseResultsOrError ParseFromBuffer(
-    char* input, size_t size, const ParseResults* initial_context = nullptr,
+    char* input, size_t size, const ParseResults* initial_results = nullptr,
     const std::optional<std::filesystem::path>& filename = std::nullopt);
 ParseResultsOrError ParseFromFile(
     const std::filesystem::path& filename,
-    const ParseResults* initial_context = nullptr);
+    const ParseResults* initial_results = nullptr);
 
 #endif  // MEMDESC_PARSER_WRAPPER_H_

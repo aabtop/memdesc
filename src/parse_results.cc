@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <iterator>
 #include <memory>
 #include <optional>
 #include <sstream>
@@ -54,6 +55,9 @@ ParseResults::ParseResults(const ParseResults& rhs) {
   // copied Structs.
   RemapStructTypePointers(remapping, declaration_order_.begin(),
                           declaration_order_.end());
+
+  dependencies_ = rhs.dependencies_;
+  from_file_ = rhs.from_file_;
 }
 
 std::optional<ParseErrorWithLocation> ParseResults::Merge(ParseResults&& src) {
@@ -94,6 +98,12 @@ std::optional<ParseErrorWithLocation> ParseResults::Merge(ParseResults&& src) {
       remappings, declaration_order_.begin() + original_num_declarations,
       declaration_order_.end());
 
+  using iter_t = std::set<std::filesystem::path>::iterator;
+  dependencies_.insert(std::move_iterator<iter_t>(src.dependencies_.begin()),
+                       std::move_iterator<iter_t>(src.dependencies_.end()));
+  if (src.from_file_) {
+    dependencies_.insert(std::move(*src.from_file_));
+  }
   return std::nullopt;
 }
 

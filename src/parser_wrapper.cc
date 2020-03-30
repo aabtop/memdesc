@@ -20,7 +20,7 @@ void yyerror(YYLTYPE* locp, ParseContext* parse_context, void* scanner,
 }
 
 ParseResultsOrError ParseFromBuffer(char* input, size_t size,
-                                    const ParseResults* initial_context,
+                                    const ParseResults* initial_results,
                                     const std::optional<fs::path>& filename) {
   if (size < 2 || input[size - 2] != '\0' || input[size - 1] != '\0') {
     return ParseErrorWithLocation{
@@ -38,9 +38,9 @@ ParseResultsOrError ParseFromBuffer(char* input, size_t size,
         SourceLocation{1, 1, filename}};
   }
 
-  ParseContext parse_context{filename, initial_context};
-  if (initial_context) {
-    parse_context.results = ParseResults(*initial_context);
+  ParseContext parse_context{filename, initial_results, ParseResults(filename)};
+  if (initial_results) {
+    parse_context.results.Merge(ParseResults(*initial_results));
   }
 
   int yyparse_result = yyparse(&parse_context, scanner);
@@ -55,7 +55,7 @@ ParseResultsOrError ParseFromBuffer(char* input, size_t size,
 }
 
 ParseResultsOrError ParseFromFile(const fs::path& filename,
-                                  const ParseResults* initial_context) {
+                                  const ParseResults* initial_results) {
   assert(filename.is_absolute());
 
   std::ifstream in_file(filename);
@@ -71,5 +71,5 @@ ParseResultsOrError ParseFromFile(const fs::path& filename,
   file_contents += '\0';
 
   return ParseFromBuffer(file_contents.data(), file_contents.size(),
-                         initial_context, filename);
+                         initial_results, filename);
 }
