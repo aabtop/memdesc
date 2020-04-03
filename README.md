@@ -73,4 +73,7 @@ In the command line above, `-t c` specifies that the target output language shou
 
 ## Building
 
-The project can be built with [CMake](https://cmake.org/).  It has no dependencies outside of a C++ 17 compiler.
+If you have Docker installed, you can just run `./build.sh` which will setup a Docker Image capable of building memdesc, use it to perform a build, and place the output in `out/`.
+
+Alternatively, the project can be built with [CMake](https://cmake.org/).  Even if you don't have Docker installed, you can refer to [the build Dockerfile](src/build/docker/linux/Dockerfile) for instructions on how to setup your environment.
+
