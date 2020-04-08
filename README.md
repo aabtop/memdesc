@@ -67,6 +67,7 @@ static_assert(offsetof(ImporterStruct, b) == 4);
 
 #ifdef __cplusplus
 }  // extern "C"
+#endif
 ```
 
 In the command line above, `-t c` specifies that the target output language should be C.  Other languages are also available (but actually not yet because this project is very young and incomplete right now).
